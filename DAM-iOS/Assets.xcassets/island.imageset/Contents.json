@@ -1,0 +1,21 @@
+{
+  "images" : [
+    {
+      "filename" : "create-fantasystyle-flat-cartoon-vector-floating-tropical-island-sky_1035633-105612-removebg-preview.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

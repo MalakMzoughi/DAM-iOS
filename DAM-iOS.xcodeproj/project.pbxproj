@@ -8,17 +8,47 @@
 
 /* Begin PBXBuildFile section */
 		88278E852EC10C0400443DA8 /* DAM_iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278E842EC10C0400443DA8 /* DAM_iOSApp.swift */; };
-		88278E872EC10C0400443DA8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278E862EC10C0400443DA8 /* ContentView.swift */; };
 		88278E892EC10C0800443DA8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 88278E882EC10C0800443DA8 /* Assets.xcassets */; };
 		88278E8C2EC10C0800443DA8 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 88278E8B2EC10C0800443DA8 /* Preview Assets.xcassets */; };
+		88278E962EC10CA400443DA8 /* AppColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278E952EC10CA400443DA8 /* AppColors.swift */; };
+		88278E982EC10CB700443DA8 /* AppImages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278E972EC10CB700443DA8 /* AppImages.swift */; };
+		88278E9A2EC10CC500443DA8 /* AppStorageKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278E992EC10CC500443DA8 /* AppStorageKeys.swift */; };
+		88278E9C2EC10CD700443DA8 /* UIHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278E9B2EC10CD700443DA8 /* UIHelpers.swift */; };
+		88278E9E2EC10CE800443DA8 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278E9D2EC10CE800443DA8 /* AppSettings.swift */; };
+		88278EA22EC10D2800443DA8 /* LandingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278EA12EC10D2800443DA8 /* LandingView.swift */; };
+		88278EA42EC10D3900443DA8 /* WaveBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278EA32EC10D3900443DA8 /* WaveBackground.swift */; };
+		88278EA62EC10D4A00443DA8 /* SettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278EA52EC10D4A00443DA8 /* SettingsSheet.swift */; };
+		88278EA82EC10D5700443DA8 /* LoginSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278EA72EC10D5700443DA8 /* LoginSheet.swift */; };
+		88278EAC2EC14F1800443DA8 /* ColorHex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278EAB2EC14F1800443DA8 /* ColorHex.swift */; };
+		88278EAF2EC1561D00443DA8 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278EAE2EC1561D00443DA8 /* HomeView.swift */; };
+		88278EB12EC1562A00443DA8 /* CloudLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278EB02EC1562A00443DA8 /* CloudLayer.swift */; };
+		88278EB32EC1563A00443DA8 /* LevelModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278EB22EC1563A00443DA8 /* LevelModels.swift */; };
+		88278EB52EC1564700443DA8 /* LevelCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278EB42EC1564700443DA8 /* LevelCard.swift */; };
+		88278EB72EC1565B00443DA8 /* ComingSoonSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278EB62EC1565B00443DA8 /* ComingSoonSheet.swift */; };
+		88278EB92EC15D6500443DA8 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88278EB82EC15D6500443DA8 /* AppRouter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		88278E812EC10C0400443DA8 /* DAM-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DAM-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		88278E842EC10C0400443DA8 /* DAM_iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DAM_iOSApp.swift; sourceTree = "<group>"; };
-		88278E862EC10C0400443DA8 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		88278E882EC10C0800443DA8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		88278E8B2EC10C0800443DA8 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		88278E952EC10CA400443DA8 /* AppColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppColors.swift; sourceTree = "<group>"; };
+		88278E972EC10CB700443DA8 /* AppImages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppImages.swift; sourceTree = "<group>"; };
+		88278E992EC10CC500443DA8 /* AppStorageKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStorageKeys.swift; sourceTree = "<group>"; };
+		88278E9B2EC10CD700443DA8 /* UIHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIHelpers.swift; sourceTree = "<group>"; };
+		88278E9D2EC10CE800443DA8 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		88278EA12EC10D2800443DA8 /* LandingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandingView.swift; sourceTree = "<group>"; };
+		88278EA32EC10D3900443DA8 /* WaveBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveBackground.swift; sourceTree = "<group>"; };
+		88278EA52EC10D4A00443DA8 /* SettingsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSheet.swift; sourceTree = "<group>"; };
+		88278EA72EC10D5700443DA8 /* LoginSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginSheet.swift; sourceTree = "<group>"; };
+		88278EAB2EC14F1800443DA8 /* ColorHex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorHex.swift; sourceTree = "<group>"; };
+		88278EAE2EC1561D00443DA8 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		88278EB02EC1562A00443DA8 /* CloudLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudLayer.swift; sourceTree = "<group>"; };
+		88278EB22EC1563A00443DA8 /* LevelModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelModels.swift; sourceTree = "<group>"; };
+		88278EB42EC1564700443DA8 /* LevelCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelCard.swift; sourceTree = "<group>"; };
+		88278EB62EC1565B00443DA8 /* ComingSoonSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComingSoonSheet.swift; sourceTree = "<group>"; };
+		88278EB82EC15D6500443DA8 /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,8 +81,9 @@
 		88278E832EC10C0400443DA8 /* DAM-iOS */ = {
 			isa = PBXGroup;
 			children = (
+				88278E9F2EC10CF900443DA8 /* Features */,
+				88278E942EC10C6700443DA8 /* Shared */,
 				88278E842EC10C0400443DA8 /* DAM_iOSApp.swift */,
-				88278E862EC10C0400443DA8 /* ContentView.swift */,
 				88278E882EC10C0800443DA8 /* Assets.xcassets */,
 				88278E8A2EC10C0800443DA8 /* Preview Content */,
 			);
@@ -65,6 +96,52 @@
 				88278E8B2EC10C0800443DA8 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		88278E942EC10C6700443DA8 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				88278E952EC10CA400443DA8 /* AppColors.swift */,
+				88278E972EC10CB700443DA8 /* AppImages.swift */,
+				88278E992EC10CC500443DA8 /* AppStorageKeys.swift */,
+				88278E9B2EC10CD700443DA8 /* UIHelpers.swift */,
+				88278E9D2EC10CE800443DA8 /* AppSettings.swift */,
+				88278EAB2EC14F1800443DA8 /* ColorHex.swift */,
+				88278EB82EC15D6500443DA8 /* AppRouter.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		88278E9F2EC10CF900443DA8 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				88278EAD2EC1560C00443DA8 /* Home */,
+				88278EA02EC10D0F00443DA8 /* Landing */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		88278EA02EC10D0F00443DA8 /* Landing */ = {
+			isa = PBXGroup;
+			children = (
+				88278EA12EC10D2800443DA8 /* LandingView.swift */,
+				88278EA32EC10D3900443DA8 /* WaveBackground.swift */,
+				88278EA52EC10D4A00443DA8 /* SettingsSheet.swift */,
+				88278EA72EC10D5700443DA8 /* LoginSheet.swift */,
+			);
+			path = Landing;
+			sourceTree = "<group>";
+		};
+		88278EAD2EC1560C00443DA8 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				88278EAE2EC1561D00443DA8 /* HomeView.swift */,
+				88278EB02EC1562A00443DA8 /* CloudLayer.swift */,
+				88278EB22EC1563A00443DA8 /* LevelModels.swift */,
+				88278EB42EC1564700443DA8 /* LevelCard.swift */,
+				88278EB62EC1565B00443DA8 /* ComingSoonSheet.swift */,
+			);
+			path = Home;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -137,8 +214,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				88278E872EC10C0400443DA8 /* ContentView.swift in Sources */,
+				88278E9A2EC10CC500443DA8 /* AppStorageKeys.swift in Sources */,
+				88278EA82EC10D5700443DA8 /* LoginSheet.swift in Sources */,
+				88278E962EC10CA400443DA8 /* AppColors.swift in Sources */,
+				88278EA42EC10D3900443DA8 /* WaveBackground.swift in Sources */,
+				88278EAC2EC14F1800443DA8 /* ColorHex.swift in Sources */,
+				88278EB72EC1565B00443DA8 /* ComingSoonSheet.swift in Sources */,
+				88278E9E2EC10CE800443DA8 /* AppSettings.swift in Sources */,
+				88278EA62EC10D4A00443DA8 /* SettingsSheet.swift in Sources */,
+				88278E982EC10CB700443DA8 /* AppImages.swift in Sources */,
+				88278EB32EC1563A00443DA8 /* LevelModels.swift in Sources */,
+				88278EB12EC1562A00443DA8 /* CloudLayer.swift in Sources */,
+				88278EA22EC10D2800443DA8 /* LandingView.swift in Sources */,
+				88278EAF2EC1561D00443DA8 /* HomeView.swift in Sources */,
+				88278E9C2EC10CD700443DA8 /* UIHelpers.swift in Sources */,
 				88278E852EC10C0400443DA8 /* DAM_iOSApp.swift in Sources */,
+				88278EB92EC15D6500443DA8 /* AppRouter.swift in Sources */,
+				88278EB52EC1564700443DA8 /* LevelCard.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -274,6 +366,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -302,6 +395,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
