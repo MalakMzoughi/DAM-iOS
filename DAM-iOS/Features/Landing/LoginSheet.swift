@@ -8,55 +8,53 @@
 import SwiftUI
 
 struct LoginSheet: View {
-    var onApple: () -> Void
-    var onGoogle: () -> Void
-    var onFacebook: () -> Void
-    
+    @EnvironmentObject var session: UserSession
+    @EnvironmentObject var router: AppRouter
+    @Environment(\.dismiss) private var dismiss
+    @State private var isLoading = false
+    @State private var errorText: String?
+
     var body: some View {
         VStack(spacing: 16) {
-            Text("Login")
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-            
+            Text("Login").font(.title.bold())
+
             Button {
-                onApple()
-            } label : {
-                Label("Continue with Apple", systemImage: "apple.logo")
-                    .frame(maxWidth: .infinity)
+                Task {
+                    await MainActor.run { isLoading = true; errorText = nil }
+                    defer { Task { await MainActor.run { isLoading = false } } }
+
+                    do {
+                        try await session.loginWithGoogle()
+                        await MainActor.run {
+                            router.current = .home
+                            dismiss()
+                        }
+                    } catch {
+                        await MainActor.run { errorText = error.localizedDescription }
+                    }
+                }
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "g.circle.fill")
+                    Text("Continue with Google").bold()
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
             }
-            .buttonStyle(PrimaryButtonStyle())
-            
-            
-            Button {
-                onGoogle()
-            } label : {
-                Label("Continue with Google", systemImage: "g.circle")
-                    .frame(maxWidth: .infinity)
+            .disabled(isLoading)
+
+            if let errorText {
+                Text(errorText).foregroundStyle(.red).font(.footnote)
             }
-            .buttonStyle(SecondaryButtonStyle())
-            
-            
-            Button {
-                onFacebook()
-            } label : {
-                Label("Continue with Facebook", systemImage: "f.circle")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(SecondaryButtonStyle())
         }
         .padding(24)
-        .frame(maxWidth: 540)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.25), lineWidth: 1)
-        )
-        .padding(.horizontal, 24)
+        .frame(maxWidth: 420)
     }
 }
 
 struct LoginSheet_Previews: PreviewProvider {
     static var previews: some View {
-        LoginSheet(onApple: {}, onGoogle: {}, onFacebook: {})
+        LoginSheet()
             .previewLayout(.sizeThatFits)
             .background(Color.gray)
             .previewInterfaceOrientation(.landscapeLeft)
