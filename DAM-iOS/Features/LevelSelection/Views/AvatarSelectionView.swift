@@ -231,7 +231,7 @@ struct AvatarSelectionView: View {
                                     .stroke(Color.yellow, lineWidth: 3)
                             )
                         
-                        Image(level.islandAsset)
+                        Image(level.islandImageUrl)
                             .resizable()
                             .scaledToFit()
                             .frame(width: 90, height: 90)
@@ -396,7 +396,7 @@ struct DefaultAvatarCard: View {
                                 .stroke(isSelected ? Color.yellow : Color.white.opacity(0.5), lineWidth: isSelected ? 4 : 2)
                         )
                     
-                    Image(level.islandAsset)
+                    Image(level.islandImageUrl)
                         .resizable()
                         .scaledToFit()
                         .frame(width: 160, height: 160)

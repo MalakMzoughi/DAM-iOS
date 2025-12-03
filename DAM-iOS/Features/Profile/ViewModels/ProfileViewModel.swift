@@ -12,6 +12,9 @@ class ProfileViewModel: ObservableObject {
     @Published var avatars: [Avatar] = []
     @Published var isLoading = false
     @Published var errorMessage: String? = nil
+    @Published var isPerformingAction: Bool = false
+    
+    private let avatarService = AvatarService.shared
     
     @MainActor func loadAvatars(userSession: UserSession) {
         isLoading = true
@@ -40,6 +43,36 @@ class ProfileViewModel: ObservableObject {
                     self.avatars = []
                 }
             }
+        }
+    }
+    
+    @MainActor
+    func setActiveAvatar(_ avatar: Avatar, userSession: UserSession) async {
+        guard !isPerformingAction else { return }
+        isPerformingAction = true
+        defer { isPerformingAction = false }
+        do {
+            let updatedAvatar = try await avatarService.setActiveAvatar(avatarId: avatar.id)
+            userSession.setActiveAvatar(updatedAvatar)
+            loadAvatars(userSession: userSession)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+    
+    @MainActor
+    func deleteAvatar(_ avatar: Avatar, userSession: UserSession) async {
+        guard !isPerformingAction else { return }
+        isPerformingAction = true
+        defer { isPerformingAction = false }
+        do {
+            _ = try await avatarService.deleteAvatar(avatarId: avatar.id)
+            if userSession.activeAvatar?.id == avatar.id {
+                userSession.setActiveAvatar(nil)
+            }
+            loadAvatars(userSession: userSession)
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 }

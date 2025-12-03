@@ -12,11 +12,12 @@ class SoundGenerator {
     private var audioPlayers: [String: AVAudioPlayer] = [:]
     
     init() {
-        // Setup audio session
+        // Setup audio session - use .playAndRecord to work with microphone
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .default, options: [])
+            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
             try session.setActive(true)
+            print("✅ SoundGenerator: Audio session configured for playAndRecord")
         } catch {
             print("❌ Audio session error: \(error)")
         }

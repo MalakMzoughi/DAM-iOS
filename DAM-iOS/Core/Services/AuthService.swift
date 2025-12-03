@@ -50,7 +50,7 @@ extension BackendUser {
 }
 
 enum API {
-    static let base = URL(string: "http://127.0.0.1:3000/")!
+    static let base = URL(string: "http://192.168.100.52:3000")!
 }
 
 // MARK: - AuthService

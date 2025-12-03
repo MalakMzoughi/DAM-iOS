@@ -64,27 +64,7 @@ struct AvatarDetailsView: View {
                                                 .stroke(Color.yellow, lineWidth: 4)
                                         )
                                     
-                                    if let avatarUrl = activeAvatar.readyPlayerMeAvatarUrl ?? activeAvatar.readyPlayerMeGlbUrl {
-                                        let renderUrl = ReadyPlayerMeConfig.getRenderURL(avatarUrl: avatarUrl, scene: "fullbody-portrait-v1")
-                                        AsyncImage(url: URL(string: renderUrl)) { phase in
-                                            switch phase {
-                                            case .success(let image):
-                                                image
-                                                    .resizable()
-                                                    .scaledToFit()
-                                                    .frame(width: 180, height: 180)
-                                                    .clipShape(Circle())
-                                            case .empty:
-                                                ProgressView()
-                                                    .tint(.white)
-                                                    .frame(width: 180, height: 180)
-                                            case .failure:
-                                                fallbackAvatarImage
-                                            @unknown default:
-                                                fallbackAvatarImage
-                                            }
-                                        }
-                                    } else if let imageUrl = activeAvatar.avatarImageUrl, let url = URL(string: imageUrl) {
+                                    if let imageUrl = activeAvatar.avatarImageUrl, let url = URL(string: imageUrl) {
                                         AsyncImage(url: url) { phase in
                                             switch phase {
                                             case .success(let image):
@@ -268,27 +248,7 @@ struct AvatarDetailsCard: View {
                             .stroke(isActive ? Color.yellow : Color.white.opacity(0.5), lineWidth: isActive ? 3 : 2)
                     )
                 
-                if let avatarUrl = avatar.readyPlayerMeAvatarUrl ?? avatar.readyPlayerMeGlbUrl {
-                    let renderUrl = ReadyPlayerMeConfig.getRenderURL(avatarUrl: avatarUrl, scene: "fullbody-portrait-v1")
-                    AsyncImage(url: URL(string: renderUrl)) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 90, height: 90)
-                                .clipShape(Circle())
-                        case .empty:
-                            ProgressView()
-                                .tint(.white)
-                                .frame(width: 90, height: 90)
-                        case .failure:
-                            fallbackImage
-                        @unknown default:
-                            fallbackImage
-                        }
-                    }
-                } else if let imageUrl = avatar.avatarImageUrl, let url = URL(string: imageUrl) {
+                if let imageUrl = avatar.avatarImageUrl, let url = URL(string: imageUrl) {
                     AsyncImage(url: url) { phase in
                         switch phase {
                         case .success(let image):

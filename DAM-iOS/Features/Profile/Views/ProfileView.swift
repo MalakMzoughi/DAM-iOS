@@ -18,143 +18,99 @@ struct ProfileView: View {
     @State private var showSettings = false
     @State private var selectedAvatarForEdit: Avatar? = nil
     @State private var showEditAvatar = false
+    @State private var selectedAIAvatar: Avatar? = nil
+    @State private var showAIAvatarDetail = false
+    @State private var showAddAvatar = false
+    @State private var showMusicRecognition = false
+    @State private var avatarPendingDeletion: Avatar? = nil
+    @State private var showDeleteConfirmation = false
+    @State private var showEditName = false
+
 
     var body: some View {
-        ZStack {
+        let profile = session.profile
+        let avatarURL = session.activeAvatar?.avatarImageUrl.flatMap { URL(string: $0) } ?? profile.photoUrl
+        let initials = profile.name.isEmpty ? "GP" : String(profile.name.prefix(2)).uppercased()
+
+        return ZStack {
             LinearGradient(colors: [AppColors.skyBlue,
                                     AppColors.oceanLight,
                                     AppColors.oceanDeep],
                            startPoint: .top, endPoint: .bottom)
             .ignoresSafeArea()
 
-            FloatingStarsBackground()
-            WaveBackground().opacity(0.7)
+            AnimatedKidsBackground()
+            WaveBackground().opacity(0.35)
 
-            ScrollView {
-                VStack(alignment: .center, spacing: 24) {
-
-                    // Back
-                    HStack {
-                        
-                        Button {
-                            // Navigate back to home
-                            router.current = .home
-                        } label: {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 20, weight: .bold))
-                                .frame(width: 56, height: 56)
-                                .background(.white.opacity(0.3), in: Circle())
-                                .foregroundStyle(.white)
-                        }
-                        Spacer()
-                        
-                        // Settings and Logout buttons (only for logged in)
-                        if case .loggedIn = session.state {
-                            HStack(spacing: 12) {
-                                // Settings Button
-                                Button {
-                                    showSettings = true
-                                } label: {
-                                    Image(systemName: "music.note")
-                                        .font(.system(size: 18, weight: .bold))
-                                        .frame(width: 44, height: 44)
-                                        .background(.white.opacity(0.3),
-                                                    in: Circle())
-                                        .foregroundStyle(AppColors.rainbowBlue)
-                                }
-                                
-                                // Logout Button
-                                Button {
-                                    showLogout = true
-                                } label: {
-                                    Image(systemName: "rectangle.portrait.and.arrow.right")
-                                        .font(.system(size: 18, weight: .bold))
-                                        .frame(width: 44, height: 44)
-                                        .background(.white.opacity(0.3),
-                                                    in: Circle())
-                                        .foregroundStyle(AppColors.rainbowRed)
-                                }
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 24)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    FunTopBar(
+                        onNavigateBack: { router.current = .home },
+                        onSettings: { showSettings = true },
+                        onLogout: session.isLoggedIn ? { showLogout = true } : nil,
+                        onMusic: session.isLoggedIn ? { showMusicRecognition = true } : nil
+                    )
                     .padding(.top, 24)
 
-                    // Avatar
-                    AnimatedProfileAvatar(
-                        name: session.profile.name,
-                        photoUrl: session.profile.photoUrl
-                    )
-
-                    // Name + provider badge
-                    HStack(spacing: 12) {
-                        Text((session.profile.name.isEmpty ? "Guest Player" : session.profile.name).uppercased())
-                            .font(.system(size: 36, weight: .heavy, design: .rounded))
-                            .foregroundStyle(.white)
-                            .multilineTextAlignment(.center)
-
-                        // Show provider badge only if not guest
-                        if session.profile.provider.lowercased() != "guest" {
-                            ProviderBadge(provider: session.profile.provider)
+                    PlayfulProfileAvatar(
+                        avatarURL: avatarURL,
+                        initials: initials
+                    ) {
+                        if let avatar = session.activeAvatar {
+                            handleAvatarTap(avatar)
                         }
                     }
+                    .padding(.top, 8)
 
-                    Text(levelTitle(session.profile.level))
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.9))
-
-                    if case .guest = session.state {
-                        Text("Guest Mode — Progress not saved")
-                            .font(.system(size: 14, weight: .bold))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(.white.opacity(0.28),
-                                        in: RoundedRectangle(cornerRadius: 12))
-                            .foregroundStyle(.white)
-                    }
-
-                    // Stats cards
-                    HStack(spacing: 12) {
-                        StatsCard(
-                            icon: "🏆",
-                            title: "Level",
-                            value: "\(session.profile.level)",
-                            color: AppColors.rainbowYellow
-                        )
-                        StatsCard(
-                            icon: "⭐️",
-                            title: "Stars",
-                            value: "\(session.profile.totalStars)/\(session.profile.maxStars)",
-                            color: AppColors.rainbowOrange
-                        )
-                    }
-                    .padding(.horizontal, 24)
-
-                    // Achievements
-                    AchievementsSection(
-                        totalStars: session.profile.totalStars,
-                        maxStars: session.profile.maxStars
+                    KidsNameSection(
+                        userName: profile.name.isEmpty ? "Guest Player" : profile.name,
+                        provider: profile.provider,
+                        onEdit: session.isLoggedIn ? { showEditName = true } : nil
                     )
 
-                    // My Avatars Section (only for logged in users)
+                    KidsLevelBadge(userLevel: profile.level)
+
+                    if case .guest = session.state {
+                        GuestModeBanner()
+                    }
+
+                    KidsStatsCards(
+                        userLevel: profile.level,
+                        totalStars: profile.totalStars,
+                        maxStars: profile.maxStars
+                    )
+
+                    KidsAchievementsSection(
+                        totalStars: profile.totalStars,
+                        userLevel: profile.level,
+                        maxStars: profile.maxStars
+                    )
+
                     if case .loggedIn = session.state {
-                        MyAvatarsSection(
+                        KidsAvatarsSection(
                             avatars: viewModel.avatars,
                             isLoading: viewModel.isLoading,
                             activeAvatar: session.activeAvatar,
                             onAvatarTap: { avatar in
-                                selectedAvatarForEdit = avatar
-                                showEditAvatar = true
+                                handleAvatarTap(avatar)
+                            },
+                            onActivateAvatar: { avatar in
+                                activateAvatar(avatar)
+                            },
+                            onDeleteAvatar: { avatar in
+                                avatarPendingDeletion = avatar
+                                showDeleteConfirmation = true
+                            },
+                            onCreateAvatarTap: {
+                                showAddAvatar = true
                             }
                         )
-                        .padding(.horizontal, 24)
                     }
 
-                    // Account Info
-                    AccountInfoCard(profile: session.profile)
-                        .padding(.horizontal, 24)
+                    KidsAccountInfoCard(profile: profile)
                 }
-                .padding(.top, 8)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 48)
             }
         }
         .onAppear {
@@ -206,23 +162,84 @@ struct ProfileView: View {
                     }
             }
         }
+        .sheet(isPresented: $showEditName) {
+            KidsEditNameSheet(currentName: session.profile.name.isEmpty ? "Guest Player" : session.profile.name) { newName in
+                session.updateProfileName(newName)
+            }
+        }
         .sheet(isPresented: $showEditAvatar) {
             if let avatar = selectedAvatarForEdit {
                 EditAvatarView(avatar: avatar)
                     .environmentObject(session)
             }
         }
+        .sheet(isPresented: $showAddAvatar) {
+            AvatarNameInputView()
+                .environmentObject(session)
+        }
+        .sheet(isPresented: $showAIAvatarDetail) {
+            if let avatar = selectedAIAvatar {
+                AIAvatarDetailSheet(
+                    avatar: avatar,
+                    isActive: session.activeAvatar?.id == avatar.id,
+                    onSetActive: {
+                        showAIAvatarDetail = false
+                        activateAvatar(avatar)
+                    },
+                    onDelete: {
+                        showAIAvatarDetail = false
+                        avatarPendingDeletion = avatar
+                        showDeleteConfirmation = true
+                    },
+                    onClose: {
+                        showAIAvatarDetail = false
+                    }
+                )
+            }
+        }
+        .sheet(isPresented: $showMusicRecognition) {
+            MusicRecognitionView()
+        }
+        .onChange(of: showAddAvatar) { isShowing in
+            // Refresh avatars when the create-avatar sheet is dismissed
+            if !isShowing {
+                if case .loggedIn = session.state {
+                    viewModel.loadAvatars(userSession: session)
+                }
+            }
+        }
+        .alert("Delete Avatar?", isPresented: $showDeleteConfirmation, presenting: avatarPendingDeletion) { avatar in
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                deleteAvatar(avatar)
+            }
+        } message: { avatar in
+            Text("This will permanently remove \(avatar.name).")
+        }
+    }
+}
+
+// MARK: - Private Helpers
+extension ProfileView {
+    private func handleAvatarTap(_ avatar: Avatar) {
+        if avatar.readyPlayerMeAvatarUrl != nil || avatar.readyPlayerMeGlbUrl != nil {
+            selectedAvatarForEdit = avatar
+            showEditAvatar = true
+        } else {
+            selectedAIAvatar = avatar
+            showAIAvatarDetail = true
+        }
     }
     
-    // Level title helper function
-    private func levelTitle(_ level: Int) -> String {
-        switch level {
-        case 1: return "Beginner"
-        case 2...3: return "Learner"
-        case 4...5: return "Player"
-        case 6...7: return "Skilled"
-        case 8...10: return "Expert"
-        default: return "Master"
+    private func activateAvatar(_ avatar: Avatar) {
+        Task {
+            await viewModel.setActiveAvatar(avatar, userSession: session)
+        }
+    }
+    
+    private func deleteAvatar(_ avatar: Avatar) {
+        Task {
+            await viewModel.deleteAvatar(avatar, userSession: session)
         }
     }
 }

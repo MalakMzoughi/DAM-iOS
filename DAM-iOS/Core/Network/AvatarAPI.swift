@@ -40,12 +40,26 @@ enum AvatarAPI {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         setHMACHeaders(&req, authToken: authToken, providerId: providerId)
         
-        req.httpBody = try JSONEncoder().encode(request)
+        // Encode and log the request
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        req.httpBody = try encoder.encode(request)
+        
+        if let requestJSON = String(data: req.httpBody!, encoding: .utf8) {
+            print("📤 Request body:\n\(requestJSON)")
+        }
         
         let (data, resp) = try await URLSession.shared.data(for: req)
         
         guard let http = resp as? HTTPURLResponse else {
             throw URLError(.badServerResponse)
+        }
+        
+        print("📥 Response status: \(http.statusCode)")
+        
+        // Log response body for debugging
+        if let responseJSON = String(data: data, encoding: .utf8) {
+            print("📥 Response body:\n\(responseJSON)")
         }
         
         // Handle 404 gracefully - endpoint might not be implemented yet
@@ -56,13 +70,37 @@ enum AvatarAPI {
         
         guard (200..<300).contains(http.statusCode) else {
             let bodyText = String(data: data, encoding: .utf8) ?? "No body"
-            print("❌ Avatar creation failed (\(resp)): \(bodyText)")
+            print("❌ Avatar creation failed (\(http.statusCode)): \(bodyText)")
             throw AvatarAPIError.serverError("Failed to create avatar: \(bodyText)")
         }
         
-        let avatar = try JSONDecoder().decode(Avatar.self, from: data)
-        print("✅ Avatar created:", avatar.name)
-        return avatar
+        // Decode with better error handling
+        do {
+            let decoder = JSONDecoder()
+            let avatar = try decoder.decode(Avatar.self, from: data)
+            print("✅ Avatar created:", avatar.name)
+            return avatar
+        } catch {
+            print("❌ Failed to decode avatar response:")
+            print("   Error: \(error)")
+            if let decodingError = error as? DecodingError {
+                switch decodingError {
+                case .keyNotFound(let key, let context):
+                    print("   Missing key '\(key.stringValue)' at path: \(context.codingPath.map { $0.stringValue }.joined(separator: "."))")
+                case .typeMismatch(let type, let context):
+                    print("   Type mismatch for type '\(type)' at path: \(context.codingPath.map { $0.stringValue }.joined(separator: "."))")
+                    print("   Debug description: \(context.debugDescription)")
+                case .valueNotFound(let type, let context):
+                    print("   Value not found for type '\(type)' at path: \(context.codingPath.map { $0.stringValue }.joined(separator: "."))")
+                case .dataCorrupted(let context):
+                    print("   Data corrupted at path: \(context.codingPath.map { $0.stringValue }.joined(separator: "."))")
+                    print("   Debug description: \(context.debugDescription)")
+                @unknown default:
+                    print("   Unknown decoding error")
+                }
+            }
+            throw error
+        }
     }
     
     // Get user's avatars

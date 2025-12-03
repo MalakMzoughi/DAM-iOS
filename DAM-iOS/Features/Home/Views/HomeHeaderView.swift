@@ -2,7 +2,7 @@
 //  HomeHeaderView.swift
 //  DAM-iOS
 //
-//  Created by Malak on 14/11/2025.
+//  Unified card design matching Android version
 //
 
 import SwiftUI
@@ -12,83 +12,131 @@ struct HomeHeaderView: View {
     let isLoggedIn: Bool
     let totalStars: Int
     let onBackTap: () -> Void
-    let onProfileTap: () -> Void  // This will now navigate to profile
+    let onProfileTap: () -> Void
     let onAddAvatarTap: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
-            // Back button
+            // BACK BUTTON
             Button(action: onBackTap) {
-                Image(systemName: "chevron.left")
-                    .font(.headline)
-                    .foregroundColor(.black)
-                    .padding(8)
-                    .background(Color.white.opacity(0.95))
-                    .clipShape(Capsule())
-                    .shadow(radius: 2)
-            }
-
-            Spacer(minLength: 8)
-
-            // Avatar / piano + name - NOW GOES TO PROFILE
-            Button(action: onProfileTap) {
-                HStack(spacing: 8) {
-                    if isLoggedIn {
-                        RemoteAvatar(url: profile.photoUrl, size: 40)
-                    } else {
-                        RemoteAvatar(url: nil, size: 40)
-                    }
-
-                    Text(profile.name)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.black)
-                }
-                .padding(.vertical, 6)
-                .padding(.horizontal, 10)
-                .background(Color.white.opacity(0.95))
-                .clipShape(Capsule())
-                .shadow(radius: 2)
+                Image(systemName: "arrow.left")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundColor(.blue)
+                    .frame(width: 40, height: 40)
+                    .background(Color.blue.opacity(0.2))
+                    .clipShape(Circle())
             }
             .buttonStyle(.plain)
+            .contentShape(Rectangle())
 
-            Spacer(minLength: 8)
+            // small spacing
+            Spacer().frame(width: 8)
 
-            // Add Avatar Button (only for logged in users)
-            if isLoggedIn {
-                Button(action: onAddAvatarTap) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundColor(.blue)
-                        Text("Add Avatar")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
+            // PROFILE
+            Button(action: onProfileTap) {
+                HStack(spacing: 8) {
+                    avatarView
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(profile.name)
+                            .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.black)
+                            .lineLimit(1)
+
+                        if !isLoggedIn {
+                            Text("Guest Mode")
+                                .font(.system(size: 11))
+                                .foregroundColor(.orange)
+                        }
                     }
-                    .padding(.vertical, 6)
-                    .padding(.horizontal, 10)
-                    .background(Color.white.opacity(0.95))
-                    .clipShape(Capsule())
-                    .shadow(radius: 2)
                 }
             }
+            .buttonStyle(.plain)
+            .contentShape(Rectangle())
 
-            Spacer(minLength: 8)
+            Spacer()
 
-            // Stars badge
-            HStack(spacing: 6) {
-                Image(systemName: "star.fill")
-                    .foregroundColor(.yellow)
-                Text("\(totalStars)")
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.black)
+            if isLoggedIn {
+                Button(action: onAddAvatarTap) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundColor(.blue)
+                        .frame(width: 40, height: 40)
+                        .background(Color.blue.opacity(0.2))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .contentShape(Rectangle())
             }
+
+            HStack(spacing: 4) {
+                Image(systemName: "star.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(.yellow)
+
+                Text("\(totalStars)")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.orange)
+            }
+            .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .padding(.horizontal, 10)
-            .background(Color.white.opacity(0.95))
-            .clipShape(Capsule())
-            .shadow(radius: 2)
+            .background(Color.yellow.opacity(0.2))
+            .clipShape(RoundedCornerShape(radius: 12))
         }
+        .padding(.horizontal, 30)      // only this horizontal padding
+        .padding(.vertical, 8)
+        .background(Color.white.opacity(0.95))
+        .clipShape(RoundedCornerShape(radius: 16))
+        .shadow(color: .black.opacity(0.1), radius: 6, x: 0, y: 3)
+    }
+
+    private var avatarView: some View {
+        Group {
+            if let photoUrl = profile.photoUrl {
+                AsyncImage(url: photoUrl) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 45, height: 45)
+                            .clipShape(Circle())
+                    case .failure(_), .empty:
+                        defaultAvatarView
+                    @unknown default:
+                        defaultAvatarView
+                    }
+                }
+            } else {
+                defaultAvatarView
+            }
+        }
+    }
+
+    private var defaultAvatarView: some View {
+        ZStack {
+            LinearGradient(colors: [.orange, .pink],
+                           startPoint: .topLeading,
+                           endPoint: .bottomTrailing)
+                .frame(width: 45, height: 45)
+                .clipShape(Circle())
+
+            Text("🎹")
+                .font(.system(size: 24))
+        }
+    }
+}
+
+
+// Custom rounded corner shape
+struct RoundedCornerShape: Shape {
+    let radius: CGFloat
+    
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(
+            roundedRect: rect,
+            cornerRadius: radius
+        )
+        return Path(path.cgPath)
     }
 }

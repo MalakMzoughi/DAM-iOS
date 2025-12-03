@@ -2,7 +2,7 @@
 //  DAM_iOSApp.swift
 //  DAM-iOS
 //
-//  Created by Malak on 13/11/2025.
+//  Updated with LevelFlowCoordinator
 //
 
 import SwiftUI
@@ -13,13 +13,10 @@ struct DAM_iOSApp: App {
     @StateObject private var settings = AppSettings()
     @StateObject private var router   = AppRouter()
     @StateObject private var session  = UserSession()
-    
-    
 
     init() {
-        //  Force the SDK to use your **iOS** OAuth client ID (not Web).
+        // Force the SDK to use your iOS OAuth client ID
         GoogleConfig.ensureConfigured()
-        // (Optional) One-time sanity prints – helps diagnose 400 errors.
         GoogleConfig.debugPrint()
     }
 
@@ -30,20 +27,33 @@ struct DAM_iOSApp: App {
                 .environmentObject(router)
                 .environmentObject(session)
                 .preferredColorScheme(.light)
+                .statusBar(hidden: true)  // Hide status bar
         }
     }
 }
 
-/// Small wrapper so we don’t repeat environment objects on each screen
+/// Root router view that switches screens based on AppRouter.current
 private struct RootRouterView: View {
     @EnvironmentObject var router: AppRouter
+    @EnvironmentObject var session: UserSession
 
     var body: some View {
-        Group {
+        ZStack {
             switch router.current {
-            case .landing: AuthRootView()
-            case .home:    HomeRootView()
-            case .profile: ProfileView()
+            case .landing:
+                AuthRootView()
+
+            case .profile:
+                ProfileView()
+
+            case .home:
+                HomeView()
+
+            case .level(let level):
+                // 🎮 NEW: Use LevelFlowCoordinator for complete flow
+                LevelFlowCoordinator(level: level)
+                    .environmentObject(session)
+                    .environmentObject(router)
             }
         }
     }
@@ -51,14 +61,12 @@ private struct RootRouterView: View {
 
 /// Centralized Google configuration
 enum GoogleConfig {
-    // ⬇️ REPLACE with the **iOS** OAuth client ID you created in Google Cloud
     private static let iosClientID = "99264359525-6i3m3epo6dnga0gibr94nf22qoq54fi0.apps.googleusercontent.com"
 
     static func ensureConfigured() {
         GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: iosClientID)
     }
 
-    /// Optional: prints what the app is actually using at runtime
     static func debugPrint() {
         let plistClient = Bundle.main.object(forInfoDictionaryKey: "GIDClientID") as? String ?? "<none>"
         let configured  = GIDSignIn.sharedInstance.configuration?.clientID ?? "<nil>"

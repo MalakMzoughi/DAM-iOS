@@ -2,7 +2,7 @@
 //  LevelSelectionViewModel.swift
 //  DAM-iOS
 //
-//  Created by Apple Esprit on 12/11/2025.
+//  Updated to work with coordinator pattern
 //
 
 import Foundation
@@ -14,36 +14,35 @@ enum PlayMode {
     case realPiano
 }
 
-// MARK: - Level Selection ViewModel
-class LevelSelectionViewModel: ObservableObject {
-    // Published properties for UI binding
+@MainActor
+final class LevelSelectionViewModel: ObservableObject {
+
     @Published var currentLevel: Level
-    @Published var selectedPlayMode: PlayMode?
+    @Published var selectedPlayMode: PlayMode? = nil
     @Published var showAvatarSelection = false
     @Published var showPianoView = false
-    
+
     init(level: Level) {
         self.currentLevel = level
     }
-    
-    // MARK: - Methods
+
     func selectPlayMode(_ mode: PlayMode) {
         selectedPlayMode = mode
-        
-        // For now, only App Piano is implemented
-        if mode == .appPiano {
-            // Skip avatar selection - go directly to piano with first assistant avatar
-            showPianoView = true
-        } else {
-            // Real Piano feature coming soon
-            print("Real Piano feature will be implemented in next phase")
+
+        switch mode {
+        case .appPiano:
+            // This is now handled by the parent coordinator via callback
+            // But we keep this for any internal state management
+            print("✅ App Piano selected")
+
+        case .realPiano:
+            print("⚠️ Real Piano mode coming soon…")
         }
     }
-    
+
     func resetSelection() {
         selectedPlayMode = nil
         showAvatarSelection = false
         showPianoView = false
     }
 }
-

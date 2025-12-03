@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Legacy helper used by avatar flows. Prefer `AppPreferences` for new data.
 class UserDefaultsService {
     static let shared = UserDefaultsService()
     

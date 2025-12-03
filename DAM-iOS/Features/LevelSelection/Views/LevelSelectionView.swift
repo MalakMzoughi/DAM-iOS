@@ -2,7 +2,7 @@
 //  LevelSelectionView.swift
 //  DAM-iOS
 //
-//  Enhanced for iPad Pro 12.9" Landscape Mode (ENGLISH VERSION)
+//  Updated with proper navigation to game screen
 //
 
 import SwiftUI
@@ -13,22 +13,22 @@ struct LevelSelectionView: View {
     @EnvironmentObject private var userSession: UserSession
     
     let level: Level
+    let onStartGame: () -> Void  // Callback to parent coordinator
     
-    init(level: Level) {
+    init(level: Level, onStartGame: @escaping () -> Void) {
         self.level = level
+        self.onStartGame = onStartGame
         _viewModel = StateObject(wrappedValue: LevelSelectionViewModel(level: level))
     }
     
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Background image (blurred city)
                 backgroundLayer
                 
                 VStack(spacing: 0) {
-                    // TOP: Back Button and Level Header Ribbon
+                    // TOP: Back Button & ribbon
                     HStack {
-                        // Back Button
                         Button(action: {
                             presentationMode.wrappedValue.dismiss()
                         }) {
@@ -43,13 +43,12 @@ struct LevelSelectionView: View {
                         Spacer()
                     }
                     
-                    // Level Header Ribbon
                     levelHeaderRibbon
                         .padding(.top, 10)
                     
                     Spacer().frame(height: 20)
                     
-                    // CENTER: Avatar/Character with Speech Bubble
+                    // CENTER: Speech + Character Island
                     VStack(spacing: 20) {
                         speechBubble
                         characterImage
@@ -59,7 +58,6 @@ struct LevelSelectionView: View {
                     
                     // BOTTOM: Play Mode Buttons
                     HStack(spacing: 100) {
-                        // App Piano Button
                         EnhancedPlayModeButton(
                             icon: "pianoKeys",
                             title: "Play on App\nPiano",
@@ -69,10 +67,10 @@ struct LevelSelectionView: View {
                             ],
                             action: {
                                 viewModel.selectPlayMode(.appPiano)
+                                onStartGame()  // Notify parent to show game
                             }
                         )
                         
-                        // Real Piano Button
                         EnhancedPlayModeButton(
                             icon: "realPiano",
                             title: "Play on My\nReal Piano",
@@ -86,52 +84,44 @@ struct LevelSelectionView: View {
                             isDisabled: true
                         )
                     }
-                    .padding(.bottom, 40)
                 }
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
         }
         .navigationBarHidden(true)
         .statusBar(hidden: true)
-        .fullScreenCover(isPresented: $viewModel.showAvatarSelection) {
-            // Navigate to AvatarSelectionView first
-            if let playMode = viewModel.selectedPlayMode {
-                AvatarSelectionView(level: viewModel.currentLevel, playMode: playMode)
-                    .environmentObject(userSession)
+    }
+    
+    // MARK: - Background Layer (Dynamic)
+    private var backgroundLayer: some View {
+        Group {
+            if let urlString = level.backgroundUrl,
+               let url = URL(string: urlString)
+            {
+                AsyncImage(url: url) { img in
+                    img.resizable()
+                } placeholder: {
+                    Color.black.opacity(0.4)
+                }
+            } else {
+                Color.black.opacity(0.4)
             }
         }
-        .fullScreenCover(isPresented: $viewModel.showPianoView) {
-            // Navigate to PianoView
-            PianoView(level: viewModel.currentLevel)
-        }
+        .scaledToFill()
+        .blur(radius: 3)
+        .overlay(Color.black.opacity(0.1))
     }
     
-    // MARK: - Background Layer
-    private var backgroundLayer: some View {
-        Image("bg_level1")
-            .resizable()
-            .scaledToFill()
-            .ignoresSafeArea()
-            .blur(radius: 3)
-            .overlay(
-                Color.black.opacity(0.1)
-                    .ignoresSafeArea()
-            )
-    }
-    
-    // MARK: - Level Header Ribbon
+    // MARK: - Header Ribbon
     private var levelHeaderRibbon: some View {
         ZStack {
-            // Red ribbon background
             HStack(spacing: 0) {
-                // Left torn edge
                 Image(systemName: "triangle.fill")
                     .rotationEffect(.degrees(90))
                     .foregroundColor(Color(red: 0.8, green: 0.15, blue: 0.2))
                     .frame(width: 12)
                     .offset(x: 6)
                 
-                // Main ribbon
                 Rectangle()
                     .fill(
                         LinearGradient(
@@ -145,7 +135,6 @@ struct LevelSelectionView: View {
                     )
                     .frame(height: 70)
                 
-                // Right torn edge
                 Image(systemName: "triangle.fill")
                     .rotationEffect(.degrees(-90))
                     .foregroundColor(Color(red: 0.8, green: 0.15, blue: 0.2))
@@ -154,13 +143,12 @@ struct LevelSelectionView: View {
             }
             .shadow(color: .black.opacity(0.4), radius: 8, x: 0, y: 4)
             
-            // Text content
             VStack(spacing: 4) {
-                Text("Level \(level.index):")
+                Text("Level \(level.order):")
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(.white.opacity(0.95))
                 
-                Text(level.name)
+                Text(level.title)
                     .font(.system(size: 28, weight: .heavy))
                     .foregroundColor(.white)
             }
@@ -172,7 +160,6 @@ struct LevelSelectionView: View {
     // MARK: - Speech Bubble
     private var speechBubble: some View {
         VStack(spacing: 0) {
-            // Speech bubble pointer
             Triangle()
                 .fill(Color.white)
                 .frame(width: 30, height: 15)
@@ -196,17 +183,26 @@ struct LevelSelectionView: View {
         .padding(.horizontal, 20)
     }
     
-    // MARK: - Character Image
+    // MARK: - Character Island Image (dynamic)
     private var characterImage: some View {
-        Image(level.islandAsset)
-            .resizable()
-            .scaledToFit()
-            .frame(width: 320, height: 320)
-            .shadow(color: .black.opacity(0.35), radius: 15, x: 0, y: 8)
+        Group {
+            if let url = URL(string: level.islandImageUrl) {
+                AsyncImage(url: url) { img in
+                    img.resizable()
+                } placeholder: {
+                    ProgressView()
+                }
+            } else {
+                Color.clear
+            }
+        }
+        .scaledToFit()
+        .frame(width: 320, height: 320)
+        .shadow(color: .black.opacity(0.35), radius: 15, x: 0, y: 8)
     }
 }
 
-// MARK: - Enhanced Play Mode Button
+// MARK: - Enhanced Play Mode Button (unchanged)
 struct EnhancedPlayModeButton: View {
     let icon: String
     let title: String
@@ -217,7 +213,6 @@ struct EnhancedPlayModeButton: View {
     var body: some View {
         Button(action: action) {
             ZStack {
-                // Button background circle
                 Circle()
                     .fill(
                         LinearGradient(
@@ -234,10 +229,8 @@ struct EnhancedPlayModeButton: View {
                     )
                 
                 VStack(spacing: 18) {
-                    // Icon
                     Group {
                         if icon == "pianoKeys" {
-                            // Piano keyboard icon
                             VStack(spacing: 3) {
                                 HStack(spacing: 4) {
                                     ForEach(0..<6) { _ in
@@ -252,7 +245,6 @@ struct EnhancedPlayModeButton: View {
                                     .cornerRadius(4)
                             }
                         } else {
-                            // Microphone + Piano icon
                             HStack(spacing: 10) {
                                 VStack(spacing: 3) {
                                     Capsule()
@@ -282,7 +274,6 @@ struct EnhancedPlayModeButton: View {
                     }
                     .frame(height: 50)
                     
-                    // Button text
                     Text(title)
                         .font(.system(size: 19, weight: .bold))
                         .multilineTextAlignment(.center)
@@ -308,4 +299,3 @@ struct Triangle: Shape {
         return path
     }
 }
-

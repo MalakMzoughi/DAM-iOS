@@ -32,4 +32,20 @@ extension UserProfile {
         totalStars: 0,
         maxStars: 24
     )
+    
+    func updating(name: String? = nil,
+                  level: Int? = nil,
+                  totalStars: Int? = nil) -> UserProfile {
+        UserProfile(
+            id: id,
+            name: name ?? self.name,
+            email: email,
+            photoUrl: photoUrl,
+            provider: provider,
+            providerId: providerId,
+            level: level ?? self.level,
+            totalStars: totalStars ?? self.totalStars,
+            maxStars: maxStars
+        )
+    }
 }

@@ -123,7 +123,7 @@ struct EditAvatarView: View {
         }
         .sheet(isPresented: $showReadyPlayerMe) {
             ReadyPlayerMeView(
-                existingAvatarUrl: avatar.readyPlayerMeAvatarUrl ?? avatar.readyPlayerMeGlbUrl
+                existingAvatarUrl: avatar.readyPlayerMeAvatarUrl ?? avatar.readyPlayerMeGlbUrl ?? ""
             ) { avatarUrl in
                 print("🎨 Updated Avatar URL received from Ready Player Me: \(avatarUrl)")
                 print("🔄 Setting updatedAvatarUrl...")
@@ -247,6 +247,7 @@ struct EditAvatarView: View {
                 energy: nil,
                 state: nil,
                 isActive: nil,
+                equippedOutfit: nil, // Keep existing equipped outfit
                 avatarImageUrl: thumbnailUrl,
                 readyPlayerMeId: avatarId,
                 readyPlayerMeAvatarUrl: glbUrl,

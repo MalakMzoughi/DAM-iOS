@@ -23,7 +23,7 @@ struct PianoView: View {
     // Initialization with level
     init(level: Level) {
         self.level = level
-        _viewModel = StateObject(wrappedValue: PianoViewModel(level: level.index))
+        _viewModel = StateObject(wrappedValue: PianoViewModel(level: level.order))
     }
     
     var body: some View {
@@ -212,11 +212,11 @@ struct PianoView: View {
             
             // Text content
             HStack(spacing: 8) {
-                Text("Level \(level.index):")
+                Text("Level \(level.order):")
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.white.opacity(0.95))
                 
-                Text(level.name)
+                Text(level.title)
                     .font(.system(size: 22, weight: .heavy))
                     .foregroundColor(.white)
             }
@@ -325,27 +325,8 @@ struct PianoView: View {
             
             // Avatar Image
             if let avatar = userSession.activeAvatar {
-                // Use Ready Player Me render URL if available
-                if let avatarUrl = avatar.readyPlayerMeAvatarUrl ?? avatar.readyPlayerMeGlbUrl {
-                    let renderUrl = ReadyPlayerMeConfig.getRenderURL(avatarUrl: avatarUrl, scene: "fullbody-portrait-v1")
-                    AsyncImage(url: URL(string: renderUrl)) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 240, height: 240)
-                                .shadow(color: .black.opacity(0.5), radius: 15, x: 0, y: 8)
-                        case .empty:
-                            ProgressView()
-                                .frame(width: 240, height: 240)
-                        case .failure:
-                            fallbackAvatar
-                        @unknown default:
-                            fallbackAvatar
-                        }
-                    }
-                } else if let imageUrl = avatar.avatarImageUrl, let url = URL(string: imageUrl) {
+                // Use avatar image URL if available
+                if let imageUrl = avatar.avatarImageUrl, let url = URL(string: imageUrl) {
                     AsyncImage(url: url) { phase in
                         switch phase {
                         case .success(let image):
@@ -368,7 +349,7 @@ struct PianoView: View {
                 }
             } else {
                 // Fallback to level character image if no avatar
-                Image("level_\(level.index)")
+                Image("level_\(level.order)")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 240, height: 240)
@@ -379,7 +360,7 @@ struct PianoView: View {
     
     // MARK: - Fallback Avatar
     private var fallbackAvatar: some View {
-        Image("level_\(level.index)")
+        Image("level_\(level.order)")
             .resizable()
             .scaledToFit()
             .frame(width: 240, height: 240)
