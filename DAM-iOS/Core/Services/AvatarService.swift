@@ -12,7 +12,12 @@ class AvatarService {
     static let shared = AvatarService()
     private init() {}
     
-    private let baseURL = "http://192.168.100.52:3000/api/avatars"
+    private let baseURL = API.base.appendingPathComponent("api/avatars")
+
+    private func endpoint(_ path: String = "") -> URL {
+        guard !path.isEmpty else { return baseURL }
+        return baseURL.appendingPathComponent(path)
+    }
     
     // MARK: - Helper Methods
     
@@ -44,10 +49,8 @@ class AvatarService {
     
     /// Create a new avatar
     func createAvatar(dto: CreateAvatarDto) async throws -> Avatar {
-        guard let url = URL(string: baseURL) else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
-        
+        let url = endpoint()
+
         let body = try JSONEncoder().encode(dto)
         let request = try createRequest(url: url, method: "POST", body: body)
         
@@ -64,10 +67,8 @@ class AvatarService {
     
     /// Get all avatars for user
     func getUserAvatars() async throws -> [Avatar] {
-        guard let url = URL(string: baseURL) else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
-        
+        let url = endpoint()
+
         let request = try createRequest(url: url, method: "GET")
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -83,10 +84,8 @@ class AvatarService {
     
     /// Get active avatar
     func getActiveAvatar() async throws -> Avatar {
-        guard let url = URL(string: "\(baseURL)/active") else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
-        
+        let url = endpoint("active")
+
         let request = try createRequest(url: url, method: "GET")
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -102,10 +101,8 @@ class AvatarService {
     
     /// Get avatar by ID
     func getAvatar(avatarId: String) async throws -> Avatar {
-        guard let url = URL(string: "\(baseURL)/\(avatarId)") else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
-        
+        let url = endpoint(avatarId)
+
         let request = try createRequest(url: url, method: "GET")
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -120,10 +117,8 @@ class AvatarService {
     
     /// Update avatar
     func updateAvatar(avatarId: String, dto: UpdateAvatarDto) async throws -> Avatar {
-        guard let url = URL(string: "\(baseURL)/\(avatarId)") else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
-        
+        let url = endpoint(avatarId)
+
         let body = try JSONEncoder().encode(dto)
         let request = try createRequest(url: url, method: "PUT", body: body)
         
@@ -140,10 +135,8 @@ class AvatarService {
     
     /// Set active avatar
     func setActiveAvatar(avatarId: String) async throws -> Avatar {
-        guard let url = URL(string: "\(baseURL)/\(avatarId)/activate") else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
-        
+        let url = endpoint("\(avatarId)/activate")
+
         let request = try createRequest(url: url, method: "POST")
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -159,10 +152,8 @@ class AvatarService {
     
     /// Delete avatar
     func deleteAvatar(avatarId: String) async throws -> DeleteAvatarResponse {
-        guard let url = URL(string: "\(baseURL)/\(avatarId)") else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
-        
+        let url = endpoint(avatarId)
+
         let request = try createRequest(url: url, method: "DELETE")
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -180,10 +171,8 @@ class AvatarService {
     
     /// Update avatar expression
     func updateExpression(avatarId: String, expression: String) async throws -> Avatar {
-        guard let url = URL(string: "\(baseURL)/\(avatarId)/expression") else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
-        
+        let url = endpoint("\(avatarId)/expression")
+
         let body = try JSONSerialization.data(withJSONObject: ["expression": expression])
         let request = try createRequest(url: url, method: "PUT", body: body)
         
@@ -198,10 +187,8 @@ class AvatarService {
     
     /// Update avatar energy
     func updateEnergy(avatarId: String, energyChange: Int) async throws -> Avatar {
-        guard let url = URL(string: "\(baseURL)/\(avatarId)/energy") else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
-        
+        let url = endpoint("\(avatarId)/energy")
+
         let body = try JSONSerialization.data(withJSONObject: ["energyChange": energyChange])
         let request = try createRequest(url: url, method: "PUT", body: body)
         
@@ -216,10 +203,8 @@ class AvatarService {
     
     /// Add experience to avatar
     func addExperience(avatarId: String, xpGain: Int) async throws -> Avatar {
-        guard let url = URL(string: "\(baseURL)/\(avatarId)/experience") else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
-        
+        let url = endpoint("\(avatarId)/experience")
+
         let body = try JSONSerialization.data(withJSONObject: ["xpGain": xpGain])
         let request = try createRequest(url: url, method: "POST", body: body)
         
@@ -234,10 +219,8 @@ class AvatarService {
     
     /// Get avatar stats
     func getAvatarStats(avatarId: String) async throws -> AvatarStats {
-        guard let url = URL(string: "\(baseURL)/\(avatarId)/stats") else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
-        
+        let url = endpoint("\(avatarId)/stats")
+
         let request = try createRequest(url: url, method: "GET")
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -251,10 +234,8 @@ class AvatarService {
     
     /// Equip outfit
     func equipOutfit(avatarId: String, outfitId: String) async throws -> Avatar {
-        guard let url = URL(string: "\(baseURL)/\(avatarId)/outfits/\(outfitId)/equip") else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
-        
+        let url = endpoint("\(avatarId)/outfits/\(outfitId)/equip")
+
         let request = try createRequest(url: url, method: "POST")
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -268,10 +249,8 @@ class AvatarService {
     
     /// Unlock outfit
     func unlockOutfit(avatarId: String, outfitId: String) async throws -> Avatar {
-        guard let url = URL(string: "\(baseURL)/\(avatarId)/outfits/\(outfitId)/unlock") else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
-        
+        let url = endpoint("\(avatarId)/outfits/\(outfitId)/unlock")
+
         let request = try createRequest(url: url, method: "POST")
         
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -287,10 +266,8 @@ class AvatarService {
     
     /// Generate avatar from AI prompt (preview only, not saved)
     func generateAvatarFromPrompt(dto: GenerateAvatarFromPromptDto) async throws -> AvatarGenerationResponse {
-        guard let url = URL(string: "\(baseURL)/generate-from-prompt") else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
-        
+        let url = endpoint("generate-from-prompt")
+
         let body = try JSONEncoder().encode(dto)
         let request = try createRequest(url: url, method: "POST", body: body)
         
@@ -309,10 +286,8 @@ class AvatarService {
     
     /// Save AI-generated avatar after user approves
     func saveAIAvatar(previewData: AnyCodable, name: String? = nil) async throws -> SaveAIAvatarResponse {
-        guard let url = URL(string: "\(baseURL)/save-ai-avatar") else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
-        
+        let url = endpoint("save-ai-avatar")
+
         print("📤 AvatarService: Saving AI avatar with name: '\(name ?? "nil")'")
         
         let requestBody = SaveAIAvatarRequest(previewData: previewData, name: name)

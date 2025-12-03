@@ -28,6 +28,10 @@ struct DAM_iOSApp: App {
                 .environmentObject(session)
                 .preferredColorScheme(.light)
                 .statusBar(hidden: true)  // Hide status bar
+                .task {
+                    // Restore session on app launch
+                    await session.restoreSession()
+                }
         }
     }
 }

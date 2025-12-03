@@ -27,13 +27,11 @@ class MusicService {
     static let shared = MusicService()
     private init() {}
     
-    private let baseURL = "http://192.168.100.52:3000"
+    private let baseURL = API.base
     
     /// Validate note using backend API
     func validateNote(frequency: Double, expectedNote: String) async throws -> ValidateNoteResponse {
-        guard let url = URL(string: "\(baseURL)/music/validate-note") else {
-            throw NSError(domain: "Invalid URL", code: 0)
-        }
+        let url = baseURL.appendingPathComponent("music/validate-note")
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -56,9 +54,7 @@ class MusicService {
     
     /// Recognize song from audio file using ACRCloud backend
     func recognizeSong(audioFileURL: URL) async throws -> MusicRecognitionResponse {
-        guard let url = URL(string: "\(baseURL)/music/recognize") else {
-            throw NSError(domain: "MusicService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL configuration"])
-        }
+        let url = baseURL.appendingPathComponent("music/recognize")
         
         print("🎵 Starting song recognition...")
         print("📁 Audio file: \(audioFileURL.lastPathComponent)")

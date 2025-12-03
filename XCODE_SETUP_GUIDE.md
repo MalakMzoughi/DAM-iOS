@@ -153,17 +153,9 @@ Or using Xcode:
 
 ## 🔗 Backend Configuration
 
-Update base URLs in services if needed:
-
-**AvatarService.swift** (line 15):
-```swift
-private let baseURL = "http://192.168.100.52:3000/api/avatars"
-```
-
-**MusicService.swift** (line 29):
-```swift
-private let baseURL = "http://192.168.100.52:3000"
-```
+All API clients now read the server origin from `Info.plist → API_BASE_URL`.
+Update that single value (default: `http://192.168.1.103:3000`) to match your LAN IP
+and every service—including avatars, sublevels, music recognition, etc.—will stay in sync.
 
 ---
 

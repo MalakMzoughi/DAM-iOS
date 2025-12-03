@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 // MARK: - Main Avatar Model
 struct Avatar: Codable, Identifiable, Equatable {
@@ -260,4 +261,108 @@ struct AnyCodable: Codable, Equatable {
 // MARK: - Delete Avatar Response
 struct DeleteAvatarResponse: Codable {
     let message: String
+}
+
+// MARK: - Avatar Theming Extensions
+extension Avatar {
+    /// Extract accent color from avatar customization or use default based on ID
+    func accentColor() -> Color {
+        // Try to use hair color as accent
+        if let hairColor = customization?.hairColor {
+            return avatarColorFromString(hairColor)
+        }
+        
+        // Try to use eye color as fallback
+        if let eyeColor = customization?.eyeColor {
+            return avatarColorFromString(eyeColor)
+        }
+        
+        // Use ID-based color as final fallback
+        return avatarPaletteColor(for: id)
+    }
+    
+    private func avatarColorFromString(_ colorString: String) -> Color {
+        let lowercased = colorString.lowercased()
+        
+        switch lowercased {
+        case "red", "crimson", "ruby":
+            return Color(red: 1.0, green: 0.3, blue: 0.3)
+        case "orange", "tangerine":
+            return Color(red: 1.0, green: 0.6, blue: 0.2)
+        case "yellow", "gold", "blonde":
+            return Color(red: 1.0, green: 0.85, blue: 0.2)
+        case "green", "emerald":
+            return Color(red: 0.3, green: 0.9, blue: 0.4)
+        case "blue", "azure", "sapphire":
+            return Color(red: 0.4, green: 0.7, blue: 1.0)
+        case "indigo", "navy":
+            return Color(red: 0.5, green: 0.4, blue: 1.0)
+        case "violet", "purple", "lavender":
+            return Color(red: 0.7, green: 0.4, blue: 1.0)
+        case "pink", "magenta", "rose":
+            return Color(red: 1.0, green: 0.4, blue: 0.8)
+        case "brown", "brunette", "chestnut":
+            return Color(red: 0.6, green: 0.4, blue: 0.2)
+        case "black", "ebony":
+            return Color(red: 0.3, green: 0.3, blue: 0.4)
+        case "white", "silver", "platinum":
+            return Color(red: 0.8, green: 0.8, blue: 0.9)
+        default:
+            return avatarPaletteColor(for: id)
+        }
+    }
+    
+    private func avatarPaletteColor(for id: String) -> Color {
+        let palette: [Color] = [
+            Color(red: 1.0, green: 0.3, blue: 0.3),  // Red
+            Color(red: 1.0, green: 0.6, blue: 0.2),  // Orange
+            Color(red: 1.0, green: 0.85, blue: 0.2), // Yellow
+            Color(red: 0.3, green: 0.9, blue: 0.4),  // Green
+            Color(red: 0.4, green: 0.7, blue: 1.0),  // Blue
+            Color(red: 0.5, green: 0.4, blue: 1.0),  // Indigo
+            Color(red: 0.7, green: 0.4, blue: 1.0),  // Violet
+            Color(red: 1.0, green: 0.4, blue: 0.8)   // Pink
+        ]
+        
+        // Use ID hash to pick consistent color
+        let hash = abs(id.hashValue)
+        return palette[hash % palette.count]
+    }
+}
+
+extension String {
+    /// Convert emoji or string to accent color
+    func toAvatarAccentColor() -> Color {
+        // Map common emojis to colors
+        switch self {
+        case "🎹", "🎵", "🎶", "🎼":
+            return Color(red: 0.4, green: 0.7, blue: 1.0)  // Blue
+        case "🌟", "⭐", "✨":
+            return Color(red: 1.0, green: 0.85, blue: 0.2) // Yellow
+        case "🎸", "🎺", "🎷":
+            return Color(red: 1.0, green: 0.6, blue: 0.2)  // Orange
+        case "🥁", "🎻":
+            return Color(red: 1.0, green: 0.3, blue: 0.3)  // Red
+        case "💜", "🎭":
+            return Color(red: 0.7, green: 0.4, blue: 1.0)  // Violet
+        case "💚", "🌱":
+            return Color(red: 0.3, green: 0.9, blue: 0.4)  // Green
+        case "💖", "🌸":
+            return Color(red: 1.0, green: 0.4, blue: 0.8)  // Pink
+        default:
+            // Use string hash for consistent color
+            let hash = abs(self.hashValue)
+            let palette: [Color] = [
+                Color(red: 1.0, green: 0.3, blue: 0.3),
+                Color(red: 1.0, green: 0.6, blue: 0.2),
+                Color(red: 1.0, green: 0.85, blue: 0.2),
+                Color(red: 0.3, green: 0.9, blue: 0.4),
+                Color(red: 0.4, green: 0.7, blue: 1.0),
+                Color(red: 0.5, green: 0.4, blue: 1.0),
+                Color(red: 0.7, green: 0.4, blue: 1.0),
+                Color(red: 1.0, green: 0.4, blue: 0.8)
+            ]
+            return palette[hash % palette.count]
+        }
+    }
 }

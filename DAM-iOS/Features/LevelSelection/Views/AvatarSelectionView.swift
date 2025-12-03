@@ -14,9 +14,9 @@ struct AvatarSelectionView: View {
     @StateObject private var viewModel: AvatarSelectionViewModel
     
     let level: Level
-    let playMode: PlayMode
+    let playMode: PianoMode
     
-    init(level: Level, playMode: PlayMode) {
+    init(level: Level, playMode: PianoMode) {
         self.level = level
         self.playMode = playMode
         _viewModel = StateObject(wrappedValue: AvatarSelectionViewModel())

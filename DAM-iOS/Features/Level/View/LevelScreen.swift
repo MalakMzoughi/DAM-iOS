@@ -27,12 +27,13 @@ struct LevelScreen: View {
     @State private var microphonePermissionDenied = false
     
     let level: Level
+    let sublevel: Sublevel
 
-    
-    init(level: Level, pianoMode: PianoMode = .appPiano) {
+    init(level: Level, sublevel: Sublevel, pianoMode: PianoMode = .appPiano) {
         self.level = level
+        self.sublevel = sublevel
         _pianoMode = State(initialValue: pianoMode)
-        _viewModel = StateObject(wrappedValue: LevelViewModel(level: level))
+        _viewModel = StateObject(wrappedValue: LevelViewModel(level: level, sublevel: sublevel))
     }
     
     // --------------------------------------------------
@@ -233,11 +234,11 @@ struct LevelScreen: View {
             Spacer()
             
             VStack(spacing: 2) {
-                Text("Level \(level.order)")
+                Text("Level \(level.order) · Sublevel \(sublevel.index)")
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
                 
-                Text(level.title)
+                Text(sublevel.trackName ?? level.title)
                     .font(.system(size: 24, weight: .heavy))
                     .foregroundColor(.white)
             }

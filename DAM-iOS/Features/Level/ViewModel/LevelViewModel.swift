@@ -15,7 +15,9 @@ class LevelViewModel: ObservableObject {
     // INPUT
     // ------------------------------------------------------
     let level: Level
-    private let repo = LevelRepository()
+    @Published private(set) var currentSublevel: Sublevel
+    private let progressRepo = SublevelProgressRepository()
+    private var expectedNotes: [String]
 
     
     // ------------------------------------------------------
@@ -38,9 +40,12 @@ class LevelViewModel: ObservableObject {
     // ------------------------------------------------------
     // INIT
     // ------------------------------------------------------
-    init(level: Level) {
+    init(level: Level, sublevel: Sublevel) {
         self.level = level
+        self.currentSublevel = sublevel
+        self.expectedNotes = sublevel.notes
         setupKeys()
+        updateProgress()
     }
     
     // ------------------------------------------------------
@@ -63,8 +68,8 @@ class LevelViewModel: ObservableObject {
     // NEXT EXPECTED NOTE
     // ------------------------------------------------------
     var nextNote: String? {
-        guard currentIndex < level.expectedNotes.count else { return nil }
-        return level.expectedNotes[currentIndex]
+        guard currentIndex < expectedNotes.count else { return nil }
+        return expectedNotes[currentIndex]
     }
     
     // ------------------------------------------------------
@@ -94,7 +99,7 @@ class LevelViewModel: ObservableObject {
         updateProgress()
         
         // Level completed
-        if currentIndex >= level.expectedNotes.count {
+        if currentIndex >= expectedNotes.count {
             isLevelCompleted = true
         }
     }
@@ -115,8 +120,11 @@ class LevelViewModel: ObservableObject {
     // PROGRESS BAR
     // ------------------------------------------------------
     private func updateProgress() {
-        let total = Double(level.expectedNotes.count)
-        progress = Double(currentIndex) / total
+        guard !expectedNotes.isEmpty else {
+            progress = 0
+            return
+        }
+        progress = Double(currentIndex) / Double(expectedNotes.count)
     }
 
     // Current star count based on score (used by UI)
@@ -134,30 +142,36 @@ class LevelViewModel: ObservableObject {
         wrongMessage = nil
         isLevelCompleted = false
         isFailed = false
+        expectedNotes = currentSublevel.notes
         updateProgress()
     }
     
     // ------------------------------------------------------
-    // SAVE PROGRESS (calls backend /levels/progress)
+    // SAVE PROGRESS (calls backend /sublevels/progress)
     // ------------------------------------------------------
     func saveProgress(userId: String) async -> Bool {
         let stars = calculateStars(from: score)
 
-        let request = LevelProgressRequest(
+        let request = SublevelProgressRequest(
             userId: userId,
             levelId: level.id,
+            sublevelId: currentSublevel.id,
             stars: stars,
             score: score,
             completed: true
         )
 
-        let success = await repo.saveProgress(request)
-        if success {
-            print("✅ LevelViewModel.saveProgress – saved progress for level \(level.id)")
-        } else {
-            print("⚠️ LevelViewModel.saveProgress – failed to save progress")
+        guard let updated = await progressRepo.saveProgress(request) else {
+            print("⚠️ LevelViewModel.saveProgress – failed to save sublevel progress")
+            return false
         }
-        return success
+
+        if let refreshed = updated.first(where: { $0.id == currentSublevel.id }) {
+            currentSublevel = refreshed
+        }
+
+        print("✅ LevelViewModel.saveProgress – saved progress for sublevel \(currentSublevel.id)")
+        return true
     }
 
     // Same thresholds as Android & LevelScreen

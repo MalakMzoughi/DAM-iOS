@@ -139,9 +139,9 @@ struct ProfileView: View {
             Button("Logout", role: .destructive) {
                 // New logout behavior with the new architecture:
                 // - Clear session
-                // - Back to guest
+                // - Go to welcome screen (not guest mode)
                 session.setGuest()
-                router.current = .home
+                router.current = .landing
             }
         } message: {
             Text("Are you sure you want to logout? Your progress will be saved, but you'll need to login again to access your account.")

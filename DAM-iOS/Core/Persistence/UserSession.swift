@@ -53,15 +53,20 @@ final class UserSession: ObservableObject {
         self.authToken = authToken
         self.state = .loggedIn(profile)
         
-        // Save credentials to UserDefaults for API calls
+        // Save credentials to UserDefaults for API calls and persistence
         UserDefaults.standard.set(authToken, forKey: "authToken")
         if !profile.providerId.isEmpty {
             UserDefaults.standard.set(profile.providerId, forKey: "providerId")
         }
+        
+        // Save user profile for restoration
+        if let profileData = try? JSONEncoder().encode(profile) {
+            UserDefaults.standard.set(profileData, forKey: "userProfile")
+        }
 
         print("🎉 Logged in as:", profile.name)
         print("🔐 Stored authToken:", authToken)
-        print("💾 Saved auth credentials to UserDefaults")
+        print("💾 Saved auth credentials and profile to UserDefaults")
     }
 
     func setGuest() {
@@ -71,6 +76,7 @@ final class UserSession: ObservableObject {
         // Clear credentials from UserDefaults
         UserDefaults.standard.removeObject(forKey: "authToken")
         UserDefaults.standard.removeObject(forKey: "providerId")
+        UserDefaults.standard.removeObject(forKey: "userProfile")
 
         print("👤 User is now a guest")
         print("🗑️ Cleared auth credentials from UserDefaults")
@@ -112,6 +118,40 @@ final class UserSession: ObservableObject {
         case .loggedIn:
             state = .loggedIn(updatedProfile)
         }
+    }
+    
+    // MARK: - Session Restoration
+    
+    /// Restores user session from UserDefaults on app launch
+    func restoreSession() async {
+        print("🔄 Attempting to restore session from UserDefaults...")
+        
+        guard let savedAuthToken = UserDefaults.standard.string(forKey: "authToken"),
+              !savedAuthToken.isEmpty else {
+            print("⚠️ No saved authToken found, staying in guest mode")
+            setGuest()
+            return
+        }
+        
+        guard let profileData = UserDefaults.standard.data(forKey: "userProfile"),
+              let savedProfile = try? JSONDecoder().decode(UserProfile.self, from: profileData) else {
+            print("⚠️ Could not decode saved profile, clearing session")
+            setGuest()
+            return
+        }
+        
+        print("✅ Found saved credentials")
+        print("   - User: \(savedProfile.name)")
+        print("   - Provider: \(savedProfile.providerId)")
+        
+        // Restore session immediately for quick app start
+        self.authToken = savedAuthToken
+        self.state = .loggedIn(savedProfile)
+        
+        print("✅ Session restored successfully")
+        
+        // Optional: Validate token with backend in background
+        // You could call AuthService.validateToken() here if you add that endpoint
     }
 
 }

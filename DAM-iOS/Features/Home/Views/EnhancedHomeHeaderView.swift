@@ -12,33 +12,24 @@ struct EnhancedHomeHeaderView: View {
     let isLoggedIn: Bool
     let totalStars: Int
     let activeAvatar: Avatar?
-    let onBackTap: () -> Void
-    let onProfileTap: () -> Void
-    let onAddAvatarTap: () -> Void
-    let onMusicRecognitionTap: () -> Void
+    let accentColor: Color
+    let onAvatarTap: () -> Void
+    // Removed action buttons; avatar tap opens drawer
     
     var body: some View {
         HStack(spacing: 12) {
-            // Back Button
-            Button(action: onBackTap) {
-                Image(systemName: "arrow.left")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(Color(hex: "4A90E2"))
-                    .frame(width: 40, height: 40)
-                    .background(Color(hex: "4A90E2").opacity(0.2))
-                    .clipShape(Circle())
-            }
-            
-            Spacer().frame(width: 8)
-            
-            // Profile Section
+            // Profile Section - Clickable to open drawer
             HStack(spacing: 8) {
-                Button(action: onProfileTap) {
+                Button(action: onAvatarTap) {
                     ZStack {
                         Circle()
                             .fill(
                                 LinearGradient(
-                                    colors: [Color.orange, Color.pink],
+                                    colors: [
+                                        accentColor.opacity(0.6),
+                                        accentColor,
+                                        accentColor.opacity(0.8)
+                                    ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -90,7 +81,7 @@ struct EnhancedHomeHeaderView: View {
                     } else if let avatarName = activeAvatar?.name {
                         Text(avatarName)
                             .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(Color(hex: "667EEA"))
+                            .foregroundColor(accentColor)
                     } else {
                         Text("No avatar")
                             .font(.system(size: 11))
@@ -101,43 +92,8 @@ struct EnhancedHomeHeaderView: View {
             
             Spacer()
             
-            // Action Buttons
+            // Right side: stars only (no buttons)
             HStack(spacing: 8) {
-                // Music Recognition Button
-                Button(action: onMusicRecognitionTap) {
-                    HStack(spacing: 4) {
-                        Text("🎵")
-                            .font(.system(size: 16))
-                        Text("Recognize")
-                            .font(.system(size: 12, weight: .semibold))
-                    }
-                    .foregroundColor(Color(hex: "667EEA"))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color(hex: "667EEA").opacity(0.2))
-                    .cornerRadius(18)
-                }
-                .frame(height: 36)
-                
-                // Add Avatar Button (only for logged in)
-                if isLoggedIn {
-                    Button(action: onAddAvatarTap) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 12, weight: .bold))
-                            Text("Avatar")
-                                .font(.system(size: 12, weight: .semibold))
-                        }
-                        .foregroundColor(Color(hex: "4A90E2"))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Color(hex: "4A90E2").opacity(0.2))
-                        .cornerRadius(18)
-                    }
-                    .frame(height: 36)
-                }
-                
-                // Stars Display
                 HStack(spacing: 4) {
                     Image(systemName: "star.fill")
                         .font(.system(size: 14))
@@ -152,10 +108,20 @@ struct EnhancedHomeHeaderView: View {
                 .cornerRadius(18)
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(Color.white.opacity(0.95))
-        .cornerRadius(16)
-        .shadow(color: .black.opacity(0.1), radius: 6, x: 0, y: 2)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            LinearGradient(
+                colors: [
+                    accentColor.opacity(0.4),
+                    accentColor.opacity(0.5),
+                    accentColor.opacity(0.45)
+                ],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        )
+        .cornerRadius(20)
+        .shadow(color: accentColor.opacity(0.3), radius: 8, x: 0, y: 4)
     }
 }

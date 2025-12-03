@@ -8,6 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		01A35676DFA14D8989D4EC2D /* LevelSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC684A8E7B4432FACD61F89 /* LevelSelectionView.swift */; };
+		DDEEFF001122334455667788 /* Sublevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDEEFFAA1122334455667788 /* Sublevel.swift */; };
+		DDEEFF112233445566778899 /* SublevelRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDEEFFBB1122334455667788 /* SublevelRepository.swift */; };
+		DDEEFF223344556677889900 /* SublevelListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDEEFFCC1122334455667788 /* SublevelListViewModel.swift */; };
+		DDEEFF334455667788990011 /* SublevelListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDEEFFDD1122334455667788 /* SublevelListView.swift */; };
+		DDEEFF44556677889900AABB /* SublevelProgressRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDEEFF44556677889900AACC /* SublevelProgressRepository.swift */; };
+		DDEEFF556677889900AABBCC /* SublevelProgressRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDEEFF556677889900AABBDD /* SublevelProgressRequest.swift */; };
 		27B4CA112EC77DC80033F817 /* ReadyPlayerMeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B4CA102EC77DC80033F817 /* ReadyPlayerMeModel.swift */; };
 		2F3D58EF2EC798E40030E7D5 /* HomeHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D58EE2EC798E40030E7D5 /* HomeHeaderView.swift */; };
 		2F3D58F12EC79CD70030E7D5 /* RemoteAvatar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F3D58F02EC79CD70030E7D5 /* RemoteAvatar.swift */; };
@@ -80,7 +86,9 @@
 		F3A061BD2F2A7B7600C2288E /* AppPreferences+Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A061BC2F2A7B7600C2288E /* AppPreferences+Keys.swift */; };
 		FAC590F62EDA633C0090D5E4 /* PitchDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC590F52EDA633C0090D5E4 /* PitchDetector.swift */; };
 		FAC590F82EDA70DA0090D5E4 /* MusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC590F72EDA70DA0090D5E4 /* MusicService.swift */; };
+		F3C0D1E22FE3A4B500112233 /* PianoMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C0D1E12FE3A4B500112233 /* PianoMode.swift */; };
 		FAF108B92EDB843100F96246 /* EnhancedHomeHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAF108B82EDB843100F96246 /* EnhancedHomeHeaderView.swift */; };
+		FAF108DD2FE3C1AA00F96246 /* HomeDrawerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAF108DC2FE3C1AA00F96246 /* HomeDrawerView.swift */; };
 		FAF108BF2EDB88C300F96246 /* MusicRecognitionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAF108BE2EDB88C300F96246 /* MusicRecognitionViewModel.swift */; };
 		FAF108C12EDB88D200F96246 /* MusicRecognitionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAF108C02EDB88D200F96246 /* MusicRecognitionView.swift */; };
 		FAF108C32EDB90F200F96246 /* AvatarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAF108C22EDB90F200F96246 /* AvatarViewModel.swift */; };
@@ -90,6 +98,7 @@
 		FAF108CF2EDBB6E900F96246 /* AIAvatarPromptDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAF108CE2EDBB6E900F96246 /* AIAvatarPromptDialog.swift */; };
 		FAF108D12EDBB70300F96246 /* AIAvatarPreviewDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAF108D02EDBB70300F96246 /* AIAvatarPreviewDialog.swift */; };
 		FAF108D52EDBB80000F96246 /* AIAvatarDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAF108D42EDBB80000F96246 /* AIAvatarDetailSheet.swift */; };
+		F3C0D1F22FE3B5C400112233 /* BackendConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C0D1F12FE3B5C400112233 /* BackendConfig.swift */; };
 		FAF108D32EDBB75D00F96246 /* AI_AVATAR_IMPLEMENTATION.md in Resources */ = {isa = PBXBuildFile; fileRef = FAF108D22EDBB75D00F96246 /* AI_AVATAR_IMPLEMENTATION.md */; };
 /* End PBXBuildFile section */
 
@@ -138,6 +147,12 @@
 		A133A4712EC77DC80033F817 /* AvatarNameInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarNameInputView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6789012345678 /* AvatarDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarDetailsView.swift; sourceTree = "<group>"; };
 		B0C31DF42ED34EBB0054A4AC /* Level.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level.swift; sourceTree = "<group>"; };
+		DDEEFFAA1122334455667788 /* Sublevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Model/Sublevel.swift"; sourceTree = "<group>"; };
+		DDEEFFBB1122334455667788 /* SublevelRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SublevelRepository.swift"; sourceTree = "<group>"; };
+		DDEEFFCC1122334455667788 /* SublevelListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModel/SublevelListViewModel.swift"; sourceTree = "<group>"; };
+		DDEEFFDD1122334455667788 /* SublevelListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View/SublevelListView.swift"; sourceTree = "<group>"; };
+		DDEEFF44556677889900AACC /* SublevelProgressRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SublevelProgressRepository.swift"; sourceTree = "<group>"; };
+		DDEEFF556677889900AABBDD /* SublevelProgressRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Model/SublevelProgressRequest.swift"; sourceTree = "<group>"; };
 		B0C31DF62ED351190054A4AC /* LevelProgressRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelProgressRequest.swift; sourceTree = "<group>"; };
 		B0C31DF82ED3513E0054A4AC /* UnlockedLevelsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnlockedLevelsResponse.swift; sourceTree = "<group>"; };
 		B0C31DFA2ED3517C0054A4AC /* LevelRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelRepository.swift; sourceTree = "<group>"; };
@@ -165,15 +180,18 @@
 		F3A061BC2F2A7B7600C2288E /* AppPreferences+Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppPreferences+Keys.swift"; sourceTree = "<group>"; };
 		F3A4B5C6D7E8901234567890 /* re.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = re.mp3; sourceTree = "<group>"; };
 		FAF108D42EDBB80000F96246 /* AIAvatarDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAvatarDetailSheet.swift; sourceTree = "<group>"; };
+		F3C0D1F12FE3B5C400112233 /* BackendConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendConfig.swift; sourceTree = "<group>"; };
 		F6A7B8C9D0E1234567890123 /* sol.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = sol.mp3; sourceTree = "<group>"; };
 		FAC590F52EDA633C0090D5E4 /* PitchDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchDetector.swift; sourceTree = "<group>"; };
 		FAC590F72EDA70DA0090D5E4 /* MusicService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicService.swift; sourceTree = "<group>"; };
 		FAF108B82EDB843100F96246 /* EnhancedHomeHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedHomeHeaderView.swift; sourceTree = "<group>"; };
+		FAF108DC2FE3C1AA00F96246 /* HomeDrawerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeDrawerView.swift; sourceTree = "<group>"; };
 		FAF108BE2EDB88C300F96246 /* MusicRecognitionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicRecognitionViewModel.swift; sourceTree = "<group>"; };
 		FAF108C02EDB88D200F96246 /* MusicRecognitionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicRecognitionView.swift; sourceTree = "<group>"; };
 		FAF108C22EDB90F200F96246 /* AvatarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarViewModel.swift; sourceTree = "<group>"; };
 		FAF108C52EDB938900F96246 /* MusicRecognitionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicRecognitionModels.swift; sourceTree = "<group>"; };
 		FAF108C82EDB93BC00F96246 /* AvatarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarService.swift; sourceTree = "<group>"; };
+		F3C0D1E12FE3A4B500112233 /* PianoMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Models/PianoMode.swift"; sourceTree = "<group>"; };
 		FAF108CC2EDB969000F96246 /* AvatarModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarModels.swift; sourceTree = "<group>"; };
 		FAF108CE2EDBB6E900F96246 /* AIAvatarPromptDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAvatarPromptDialog.swift; sourceTree = "<group>"; };
 		FAF108D02EDBB70300F96246 /* AIAvatarPreviewDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAvatarPreviewDialog.swift; sourceTree = "<group>"; };
@@ -253,12 +271,21 @@
 		2F5B7D6F2EC668E700647B8D /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				F3C0D1F32FE3B5E600112233 /* Config */,
 				2F5B7D712EC6690D00647B8D /* Services */,
 				2F5B7D722EC6691800647B8D /* Network */,
 				2F5B7D732EC6692000647B8D /* Persistence */,
 				C7D13A640A95667CE65DCC6A /* Models */,
 			);
 			path = Core;
+			sourceTree = "<group>";
+		};
+		F3C0D1F32FE3B5E600112233 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				F3C0D1F12FE3B5C400112233 /* BackendConfig.swift */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 		2F5B7D712EC6690D00647B8D /* Services */ = {
@@ -340,6 +367,7 @@
 				2F5B7D7A2EC6699500647B8D /* Home */,
 				3F80F0E12EC77DC80033F817 /* Avatar */,
 				4A5B6C7D8E9F0A1B2C3D4E5F /* LevelSelection */,
+				DDEEFFEE1122334455667788 /* Sublevel */,
 				5B6C7D8E9F0A1B2C3D4E5F6A /* Piano */,
 				D7B26E8762FB312C957AD6E7 /* Music */,
 				FAF108CE2EDBB6E900F96246 /* AIAvatarPromptDialog.swift */,
@@ -438,6 +466,7 @@
 			isa = PBXGroup;
 			children = (
 				FAF108B82EDB843100F96246 /* EnhancedHomeHeaderView.swift */,
+				FAF108DC2FE3C1AA00F96246 /* HomeDrawerView.swift */,
 				2F3D58EE2EC798E40030E7D5 /* HomeHeaderView.swift */,
 				B0C31E0C2ED37DA90054A4AC /* HomeView.swift */,
 			);
@@ -630,6 +659,7 @@
 			children = (
 				FAF108C52EDB938900F96246 /* MusicRecognitionModels.swift */,
 				FAF108CC2EDB969000F96246 /* AvatarModels.swift */,
+				F3C0D1E12FE3A4B500112233 /* PianoMode.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -641,6 +671,19 @@
 				7279F462CFAC7F74159DD0F0 /* Views */,
 			);
 			name = Music;
+			sourceTree = "<group>";
+		};
+		DDEEFFEE1122334455667788 /* Sublevel */ = {
+			isa = PBXGroup;
+			children = (
+				DDEEFFAA1122334455667788 /* Sublevel.swift */,
+				DDEEFFBB1122334455667788 /* SublevelRepository.swift */,
+				DDEEFF44556677889900AACC /* SublevelProgressRepository.swift */,
+				DDEEFFCC1122334455667788 /* SublevelListViewModel.swift */,
+				DDEEFFDD1122334455667788 /* SublevelListView.swift */,
+				DDEEFF556677889900AABBDD /* SublevelProgressRequest.swift */,
+			);
+			path = Sublevel;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -738,6 +781,7 @@
 				2F3D58EF2EC798E40030E7D5 /* HomeHeaderView.swift in Sources */,
 				2F5B7DC62EC676E500647B8D /* GoogleAuthProvider.swift in Sources */,
 				FAF108B92EDB843100F96246 /* EnhancedHomeHeaderView.swift in Sources */,
+				FAF108DD2FE3C1AA00F96246 /* HomeDrawerView.swift in Sources */,
 				2F5B7D622EC668AF00647B8D /* DAM_iOSApp.swift in Sources */,
 				B0C31DF72ED351190054A4AC /* LevelProgressRequest.swift in Sources */,
 				2F5B7DD72EC67BD500647B8D /* WaveBackground.swift in Sources */,
@@ -775,6 +819,7 @@
 				2F5B7DD92EC67BE300647B8D /* SettingsSheet.swift in Sources */,
 				2F5B7DB12EC66D5C00647B8D /* AuthUIState.swift in Sources */,
 				FAF108CD2EDB969000F96246 /* AvatarModels.swift in Sources */,
+				F3C0D1E22FE3A4B500112233 /* PianoMode.swift in Sources */,
 				B0C31E0F2ED37FB70054A4AC /* HomeScreenViewModel.swift in Sources */,
 				2F5B7DD52EC67B7800647B8D /* ProfileComponents.swift in Sources */,
 				FAC590F62EDA633C0090D5E4 /* PitchDetector.swift in Sources */,
@@ -788,8 +833,11 @@
 				2F5B7DAC2EC66CF300647B8D /* AppImages.swift in Sources */,
 				2F5B7D882EC66ABB00647B8D /* AuthService.swift in Sources */,
 				01A35676DFA14D8989D4EC2D /* LevelSelectionView.swift in Sources */,
+				DDEEFF44556677889900AABB /* SublevelProgressRepository.swift in Sources */,
+				DDEEFF556677889900AABBCC /* SublevelProgressRequest.swift in Sources */,
 				ABFBC363B7DC4BEC89E79662 /* AvatarSelectionView.swift in Sources */,
 				FAF108C92EDB93BC00F96246 /* AvatarService.swift in Sources */,
+				F3C0D1F22FE3B5C400112233 /* BackendConfig.swift in Sources */,
 				BC93A6F4074D4B5AA07F3124 /* LevelSelectionViewModel.swift in Sources */,
 				337C2D0C8DA44594AF7C9B14 /* AvatarSelectionViewModel.swift in Sources */,
 				91B5F19043A04A318D1BB63E /* PianoView.swift in Sources */,
@@ -800,6 +848,10 @@
 				654C4DD39F974A899CD780BF /* PianoKey.swift in Sources */,
 				FAF108D12EDBB70300F96246 /* AIAvatarPreviewDialog.swift in Sources */,
 				72AED294896D4FC793F91A7C /* SoundGenerator.swift in Sources */,
+				DDEEFF001122334455667788 /* Sublevel.swift in Sources */,
+				DDEEFF112233445566778899 /* SublevelRepository.swift in Sources */,
+				DDEEFF223344556677889900 /* SublevelListViewModel.swift in Sources */,
+				DDEEFF334455667788990011 /* SublevelListView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

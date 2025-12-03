@@ -113,26 +113,6 @@ final class LevelRepository {
         }
     }
 
-    // MARK: - Save user progress (POST /levels/progress)
-    func saveProgress(_ request: LevelProgressRequest) async -> Bool {
-        guard let url = URL(string: "\(baseURL)/levels/progress") else { return false }
-
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        do {
-            req.httpBody = try jsonEncoder.encode(request)
-
-            let (_, response) = try await URLSession.shared.data(for: req)
-            guard let http = response as? HTTPURLResponse else { return false }
-
-            return http.statusCode == 200 || http.statusCode == 201
-        } catch {
-            print("❌ saveProgress error:", error)
-            return false
-        }
-    }
 
     // MARK: - Fetch unlocked levels (/levels/unlocked/:userId)
     func getUnlockedLevels(userId: String) async -> UnlockedLevelsResponse? {

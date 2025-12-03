@@ -8,18 +8,12 @@
 import SwiftUI
 import UIKit
 
-enum PianoMode {
-    case appPiano      // Use virtual keyboard
-    case realPiano     // Use microphone to detect notes
-}
-
 struct LevelIntroDialogView: View {
     let level: Level
-    let onFinished: (PianoMode) -> Void
+    let onChooseSublevel: () -> Void
     
     @State private var typedText = ""
     @State private var showStartButton = false
-    @State private var showModeSelection = false
     @State private var allTextShown = false
     @State private var isVisible = false
 
@@ -109,83 +103,14 @@ struct LevelIntroDialogView: View {
                     }
                 }
 
-                // MODE SELECTION BUTTONS
-                if showModeSelection {
-                    VStack(spacing: 16) {
-                        Text("Choose Piano Mode")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.white)
-                        
-                        // APP PIANO BUTTON
-                        Button(action: {
-                            onFinished(.appPiano)
-                        }) {
-                            HStack(spacing: 12) {
-                                Text("🎹")
-                                    .font(.system(size: 30))
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Use App Piano")
-                                        .font(.system(size: 18, weight: .bold))
-                                        .foregroundColor(.white)
-                                    Text("Tap on screen keyboard")
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.white.opacity(0.8))
-                                }
-                                Spacer()
-                            }
-                            .padding()
-                            .background(
-                                LinearGradient(
-                                    colors: [.blue, .cyan],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .cornerRadius(16)
-                            .shadow(color: .blue.opacity(0.4), radius: 6, x: 0, y: 3)
-                        }
-                        
-                        // REAL PIANO BUTTON
-                        Button(action: {
-                            onFinished(.realPiano)
-                        }) {
-                            HStack(spacing: 12) {
-                                Text("🎤")
-                                    .font(.system(size: 30))
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Use Real Piano")
-                                        .font(.system(size: 18, weight: .bold))
-                                        .foregroundColor(.white)
-                                    Text("Play with your instrument")
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.white.opacity(0.8))
-                                }
-                                Spacer()
-                            }
-                            .padding()
-                            .background(
-                                LinearGradient(
-                                    colors: [.purple, .pink],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .cornerRadius(16)
-                            .shadow(color: .purple.opacity(0.4), radius: 6, x: 0, y: 3)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .transition(.opacity.combined(with: .scale))
-                }
-                
-                // LEGACY START BUTTON (hidden when mode selection shows)
-                if showStartButton && !showModeSelection {
-                    Button(action: { showModeSelection = true }) {
+                // START BUTTON
+                if showStartButton {
+                    Button(action: onChooseSublevel) {
                         HStack {
-                            Text("CONTINUE")
+                            Text("CHOOSE SUBLEVEL")
                                 .font(.system(size: 20, weight: .heavy))
                                 .foregroundColor(.white)
-                            Text("▶️")
+                            Text("🎯")
                                 .font(.system(size: 20))
                         }
                         .padding(.vertical, 12)

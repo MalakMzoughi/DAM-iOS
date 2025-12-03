@@ -15,7 +15,9 @@ struct LevelFlowCoordinator: View {
     
     @State private var currentStep: FlowStep = .intro
     @State private var shouldDismiss = false
-    @State private var selectedPianoMode: PianoMode = .appPiano
+    @State private var selectedPianoMode: PianoMode?
+    @State private var selectedSublevel: Sublevel?
+    @State private var showSublevelSheet = false
     
     enum FlowStep {
         case intro
@@ -28,42 +30,38 @@ struct LevelFlowCoordinator: View {
             case .intro:
                 LevelIntroDialogView(
                     level: level,
-                    onFinished: { mode in
-                        selectedPianoMode = mode
-                        withAnimation {
-                            currentStep = .game
-                        }
+                    onChooseSublevel: {
+                        showSublevelSheet = true
                     }
                 )
                 
             case .game:
-                LevelScreenWrapper(level: level, pianoMode: selectedPianoMode) {
-                    // When game ends (completion dialog dismissed), go back to home
-                    router.current = .home
+                if let sublevel = selectedSublevel, let mode = selectedPianoMode {
+                    LevelScreen(level: level, sublevel: sublevel, pianoMode: mode)
+                        .environmentObject(userSession)
+                } else {
+                    // Should never happen, but gracefully fall back to intro
+                    Color.clear
+                        .onAppear {
+                            currentStep = .intro
+                        }
                 }
-                .environmentObject(userSession)
             }
         }
-    }
-}
-
-// Wrapper to handle the completion callback from LevelScreen
-private struct LevelScreenWrapper: View {
-    @EnvironmentObject var userSession: UserSession
-    
-    let level: Level
-    let pianoMode: PianoMode
-    let onGameComplete: () -> Void
-    
-    @State private var showSuccessDialog = false
-    @State private var earnedStars = 0
-    
-    var body: some View {
-        LevelScreen(level: level, pianoMode: pianoMode)
-            .environmentObject(userSession)
-            .onChange(of: showSuccessDialog) { isShowing in
-                // This will be triggered by LevelScreen's completion
-                // For now, we'll handle this through LevelScreen's own success dialog
+        .sheet(isPresented: $showSublevelSheet) {
+            SublevelListView(
+                level: level,
+                levelId: level.id,
+                userId: userSession.isLoggedIn ? userSession.profile.id : nil,
+                preselectedMode: selectedPianoMode
+            ) { sublevel, mode in
+                selectedPianoMode = mode
+                selectedSublevel = sublevel
+                showSublevelSheet = false
+                withAnimation {
+                    currentStep = .game
+                }
             }
+        }
     }
 }

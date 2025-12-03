@@ -28,6 +28,11 @@ struct HomeView: View {
     @State private var showGuestAlert = false
     @State private var showAddAvatar = false
     @State private var showMusicRecognition = false
+    
+    // ---------------------------------------------------------
+    // DRAWER
+    // ---------------------------------------------------------
+    @State private var showDrawer = false
 
     // ---------------------------------------------------------
     // MAP CONSTANTS - Will use screen size
@@ -65,22 +70,51 @@ struct HomeView: View {
             VStack {
                 let currentProfile = userSession.profile
                 let currentAvatar = userSession.activeAvatar
+                let avatarAccentColor = currentAvatar?.accentColor() ?? "🎹".toAvatarAccentColor()
                 
                 EnhancedHomeHeaderView(
                     profile: currentProfile,
                     isLoggedIn: userSession.isLoggedIn,
                     totalStars: viewModel.totalStars,
                     activeAvatar: currentAvatar,
-                    onBackTap: { router.current = .landing },
-                    onProfileTap: { router.current = .profile },
-                    onAddAvatarTap: { showAddAvatar = true },
-                    onMusicRecognitionTap: { showMusicRecognition = true }
+                    accentColor: avatarAccentColor,
+                    onAvatarTap: { showDrawer = true }
                 )
                 .padding(EdgeInsets(top: 8, leading: 50, bottom: 8, trailing: 50))
                 
                 Spacer()
             }
             .zIndex(1000)
+            
+            // Drawer overlay
+            if showDrawer {
+                HomeDrawerView(
+                    userName: userSession.profile.name,
+                    avatarImageUrl: userSession.activeAvatar?.avatarImageUrl,
+                    avatarName: userSession.activeAvatar?.name,
+                    fallbackEmoji: "🎹",
+                    isLoggedIn: userSession.isLoggedIn,
+                    accentColor: userSession.activeAvatar?.accentColor() ?? "🎹".toAvatarAccentColor(),
+                    onProfileClick: {
+                        showDrawer = false
+                        router.current = .profile
+                    },
+                    onRecognizeClick: {
+                        showDrawer = false
+                        showMusicRecognition = true
+                    },
+                    onAddAvatarClick: {
+                        showDrawer = false
+                        showAddAvatar = true
+                    },
+                    onClose: {
+                        showDrawer = false
+                    }
+                )
+                .transition(.move(edge: .leading))
+                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showDrawer)
+                .zIndex(2000)
+            }
             
         }
         .overlay(alignment: .topTrailing) {

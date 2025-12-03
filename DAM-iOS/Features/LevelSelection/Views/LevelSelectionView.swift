@@ -21,6 +21,10 @@ struct LevelSelectionView: View {
         _viewModel = StateObject(wrappedValue: LevelSelectionViewModel(level: level))
     }
     
+    @State private var showSublevels: Bool = false
+    @State private var selectedMode: PianoMode? = nil
+    private let subRepo = SublevelRepository()
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -58,18 +62,18 @@ struct LevelSelectionView: View {
                     
                     // BOTTOM: Play Mode Buttons
                     HStack(spacing: 100) {
-                        EnhancedPlayModeButton(
-                            icon: "pianoKeys",
-                            title: "Play on App\nPiano",
-                            colors: [
-                                Color(red: 1.0, green: 0.75, blue: 0.15),
-                                Color(red: 1.0, green: 0.5, blue: 0.0)
-                            ],
-                            action: {
-                                viewModel.selectPlayMode(.appPiano)
-                                onStartGame()  // Notify parent to show game
-                            }
-                        )
+                            EnhancedPlayModeButton(
+                                icon: "pianoKeys",
+                                title: "Play on App\nPiano",
+                                colors: [
+                                    Color(red: 1.0, green: 0.75, blue: 0.15),
+                                    Color(red: 1.0, green: 0.5, blue: 0.0)
+                                ],
+                                action: {
+                                    selectedMode = .appPiano
+                                    showSublevels = true
+                                }
+                            )
                         
                         EnhancedPlayModeButton(
                             icon: "realPiano",
@@ -79,9 +83,10 @@ struct LevelSelectionView: View {
                                 Color(red: 0.55, green: 0.45, blue: 0.95)
                             ],
                             action: {
-                                viewModel.selectPlayMode(.realPiano)
+                                selectedMode = .realPiano
+                                showSublevels = true
                             },
-                            isDisabled: true
+                            isDisabled: false
                         )
                     }
                 }
@@ -90,6 +95,17 @@ struct LevelSelectionView: View {
         }
         .navigationBarHidden(true)
         .statusBar(hidden: true)
+        .sheet(isPresented: $showSublevels) {
+            SublevelListView(
+                level: level,
+                levelId: level.id,
+                userId: userSession.isLoggedIn ? userSession.profile.id : nil,
+                preselectedMode: selectedMode
+            ) { sub, mode in
+                print("Selected sublevel: \(sub.id) with mode: \(mode)")
+                onStartGame()
+            }
+        }
     }
     
     // MARK: - Background Layer (Dynamic)
