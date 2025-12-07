@@ -75,6 +75,10 @@ final class AuthService {
         var request = URLRequest(url: API.base.appendingPathComponent("auth/social-login"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 30  // Increase timeout to 30 seconds
+        
+        print("🔍 Auth Request URL: \(request.url?.absoluteString ?? "nil")")
+        print("🔍 Backend Base URL: \(API.base.absoluteString)")
 
         let body = SocialLoginBody(token: idToken, provider: "google")
         request.httpBody = try JSONEncoder().encode(body)

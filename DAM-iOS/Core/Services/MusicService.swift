@@ -57,6 +57,7 @@ class MusicService {
         let url = baseURL.appendingPathComponent("music/recognize")
         
         print("🎵 Starting song recognition...")
+        print("🌐 API URL: \(url.absoluteString)")
         print("📁 Audio file: \(audioFileURL.lastPathComponent)")
         print("📂 Full path: \(audioFileURL.path)")
         
@@ -83,7 +84,7 @@ class MusicService {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        request.timeoutInterval = 30 // 30 second timeout
+        request.timeoutInterval = 60 // 60 second timeout (increased for ACRCloud processing)
         
         // Build multipart body
         var body = Data()
@@ -112,7 +113,10 @@ class MusicService {
         request.httpBody = body
         
         print("📤 Sending request to \(url.absoluteString)")
+        print("📤 Request method: \(request.httpMethod ?? "UNKNOWN")")
+        print("📤 Content-Type: \(request.value(forHTTPHeaderField: "Content-Type") ?? "NONE")")
         print("📦 Request body size: \(body.count) bytes")
+        print("📦 Request headers: \(request.allHTTPHeaderFields ?? [:])")
         
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
@@ -135,8 +139,23 @@ class MusicService {
                     return result
                 } catch {
                     print("❌ Failed to decode response: \(error)")
+                    print("❌ Decoding error: \(error.localizedDescription)")
+                    if let decodingError = error as? DecodingError {
+                        switch decodingError {
+                        case .keyNotFound(let key, let context):
+                            print("❌ Missing key: \(key.stringValue) - \(context.debugDescription)")
+                        case .typeMismatch(let type, let context):
+                            print("❌ Type mismatch: expected \(type) - \(context.debugDescription)")
+                        case .valueNotFound(let type, let context):
+                            print("❌ Value not found: \(type) - \(context.debugDescription)")
+                        case .dataCorrupted(let context):
+                            print("❌ Data corrupted: \(context.debugDescription)")
+                        @unknown default:
+                            print("❌ Unknown decoding error")
+                        }
+                    }
                     print("❌ Raw response data: \(String(data: data, encoding: .utf8) ?? "unable to decode")")
-                    throw NSError(domain: "MusicService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to parse server response: \(error.localizedDescription)"])
+                    throw NSError(domain: "MusicService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to parse server response. The song may have been recognized but the data format is unexpected."])
                 }
             } else if httpResponse.statusCode == 400 {
                 // Bad request - likely song not found or audio issue
@@ -155,7 +174,15 @@ class MusicService {
             } else if httpResponse.statusCode >= 500 {
                 let errorMessage = String(data: data, encoding: .utf8) ?? "Server error"
                 print("❌ Server error (\(httpResponse.statusCode)): \(errorMessage)")
-                throw NSError(domain: "MusicService", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error. Please try again later."])
+                
+                // Try to extract meaningful error from response
+                if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    if let message = json["message"] as? String {
+                        throw NSError(domain: "MusicService", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error: \(message)"])
+                    }
+                }
+                
+                throw NSError(domain: "MusicService", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error (\(httpResponse.statusCode)). Please check the backend logs."])
             } else {
                 let errorMessage = String(data: data, encoding: .utf8) ?? "Unknown error"
                 print("❌ Recognition failed (\(httpResponse.statusCode)): \(errorMessage)")

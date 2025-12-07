@@ -37,8 +37,13 @@ struct LevelFlowCoordinator: View {
                 
             case .game:
                 if let sublevel = selectedSublevel, let mode = selectedPianoMode {
-                    LevelScreen(level: level, sublevel: sublevel, pianoMode: mode)
-                        .environmentObject(userSession)
+                    LevelScreen(
+                        level: level,
+                        sublevel: sublevel,
+                        pianoMode: mode,
+                        showsIntroAndSublevelSelection: false // intro + selection already handled here
+                    )
+                    .environmentObject(userSession)
                 } else {
                     // Should never happen, but gracefully fall back to intro
                     Color.clear

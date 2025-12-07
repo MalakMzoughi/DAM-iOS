@@ -48,12 +48,14 @@ class MusicRecognitionViewModel: ObservableObject {
                     return
                 }
                 
-                // Configure recorder settings
+                // Configure recorder settings - optimized for music recognition
+                // Lower quality to reduce file size while maintaining recognition accuracy
                 let settings: [String: Any] = [
                     AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
-                    AVSampleRateKey: 44100.0,
+                    AVSampleRateKey: 22050.0, // Reduced from 44100 - sufficient for music recognition
                     AVNumberOfChannelsKey: 1,
-                    AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
+                    AVEncoderAudioQualityKey: AVAudioQuality.medium.rawValue, // Medium quality reduces file size
+                    AVEncoderBitRateKey: 64000 // 64 kbps - good balance between quality and size
                 ]
                 
                 // Create and start recorder
@@ -106,9 +108,20 @@ class MusicRecognitionViewModel: ObservableObject {
             error = nil
             
             do {
+                print("🎵 MusicRecognitionViewModel: Starting recognition...")
+                print("📁 Audio file URL: \(fileURL.absoluteString)")
+                
                 let result = try await musicService.recognizeSong(audioFileURL: fileURL)
                 recognitionResult = result
                 print("✅ Song recognized: \(result.title) by \(result.artist)")
+            } catch let nsError as NSError {
+                let errorMessage = nsError.localizedDescription
+                self.error = errorMessage
+                print("❌ Recognition failed with error:")
+                print("   Domain: \(nsError.domain)")
+                print("   Code: \(nsError.code)")
+                print("   Description: \(errorMessage)")
+                print("   UserInfo: \(nsError.userInfo)")
             } catch {
                 self.error = error.localizedDescription
                 print("❌ Recognition failed: \(error)")

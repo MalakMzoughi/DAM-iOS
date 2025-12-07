@@ -47,6 +47,14 @@ class LevelViewModel: ObservableObject {
         setupKeys()
         updateProgress()
     }
+
+    // ------------------------------------------------------
+    // LOAD NEW SUBLEVEL
+    // ------------------------------------------------------
+    func loadSublevel(_ sublevel: Sublevel) {
+        currentSublevel = sublevel
+        reset()
+    }
     
     // ------------------------------------------------------
     // SETUP KEYS
@@ -98,9 +106,12 @@ class LevelViewModel: ObservableObject {
         
         updateProgress()
         
-        // Level completed
+        // Level completed - delay slightly so last note sound plays
         if currentIndex >= expectedNotes.count {
-            isLevelCompleted = true
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 second delay
+                isLevelCompleted = true
+            }
         }
     }
     

@@ -17,14 +17,26 @@ final class SublevelRepository {
     // Fetch sublevels for a given level ID
     func getSublevelsByLevel(_ levelId: String) async -> [Sublevel]? {
         let urlString = "\(API.base)/sublevels/level/\(levelId)"
-        guard let url = URL(string: urlString) else { return nil }
+        print("🔷 SublevelRepo: Fetching from URL: \(urlString)")
+        guard let url = URL(string: urlString) else {
+            print("❌ SublevelRepo: Invalid URL")
+            return nil
+        }
 
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
-            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else { return nil }
-            return try jsonDecoder.decode([Sublevel].self, from: data)
+            if let http = response as? HTTPURLResponse {
+                print("🔷 SublevelRepo: Status \(http.statusCode)")
+            }
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+                print("❌ SublevelRepo: Bad status code")
+                return nil
+            }
+            let decoded = try jsonDecoder.decode([Sublevel].self, from: data)
+            print("✅ SublevelRepo: Decoded \(decoded.count) sublevels")
+            return decoded
         } catch {
-            print("❌ SublevelRepository.getSublevelsByLevel error:", error)
+            print("❌ SublevelRepo error:", error)
             return nil
         }
     }
