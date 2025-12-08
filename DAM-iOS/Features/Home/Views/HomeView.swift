@@ -7,6 +7,8 @@
 
 import SwiftUI
 import AVFoundation
+import UIKit
+import WebKit
 
 struct HomeView: View {
 
@@ -38,6 +40,7 @@ struct HomeView: View {
     // MAP CONSTANTS - Will use screen size
     // ---------------------------------------------------------
     @State private var screenSize: CGSize = .zero
+    private let islandLayout = IslandLayoutGuide()
 
     // ---------------------------------------------------------
     // BODY
@@ -155,14 +158,20 @@ struct HomeView: View {
     // BACKGROUND - Ocean blue gradient
     // ---------------------------------------------------------
     private var backgroundLayer: some View {
-        LinearGradient(
-            colors: [
-                Color(red: 0.2, green: 0.6, blue: 0.9),
-                Color(red: 0.1, green: 0.5, blue: 0.85)
-            ],
-            startPoint: .top,
-            endPoint: .bottom
-        )
+        Group {
+            if let source = OceanBackgroundProvider.source {
+                GIFBackgroundView(source: source)
+            } else {
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.2, green: 0.6, blue: 0.9),
+                        Color(red: 0.1, green: 0.5, blue: 0.85)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+        }
         .ignoresSafeArea()
     }
 
@@ -217,68 +226,66 @@ struct HomeView: View {
     // DECORATIVE ELEMENTS - Cleaner design
     // ---------------------------------------------------------
     private var decorativeElementsLayer: some View {
-        ZStack {
-            // Palm trees
-            palmTree(at: CGPoint(x: 0.08, y: 0.52))
-            palmTree(at: CGPoint(x: 0.93, y: 0.24))
-            
-            // Sailing ship - top left
-            ship(at: CGPoint(x: 0.10, y: 0.15))
-            
-            // Pirate ship - right side
-            pirateShip(at: CGPoint(x: 0.87, y: 0.78))
-            
-            // Sea monster - center bottom
-            seaMonster(at: CGPoint(x: 0.52, y: 0.88))
-            
-            // Small rock islands for variety
-            rockIsland(at: CGPoint(x: 0.05, y: 0.35))
-            rockIsland(at: CGPoint(x: 0.58, y: 0.52))
-            
-            // Musical notes floating around
-            musicalNotes(at: CGPoint(x: 0.45, y: 0.95))
-            musicalNotes(at: CGPoint(x: 0.65, y: 0.15))
-            
-            // Subtle wave effects
-            waves()
+        GeometryReader { proxy in
+            let size = proxy.size
+            ZStack {
+                // Palm trees framing the scene
+                palmTree(in: size, at: CGPoint(x: 0.10, y: 0.30))
+                palmTree(in: size, at: CGPoint(x: 0.90, y: 0.28))
+                palmTree(in: size, at: CGPoint(x: 0.12, y: 0.78))
+                palmTree(in: size, at: CGPoint(x: 0.88, y: 0.80))
+
+                // Sailing markers
+                ship(in: size, at: CGPoint(x: 0.12, y: 0.12), badge: 1)
+                pirateShip(in: size, at: CGPoint(x: 0.87, y: 0.84))
+
+                // Atmosphere
+                seaMonster(in: size, at: CGPoint(x: 0.50, y: 0.92))
+                rockIsland(in: size, at: CGPoint(x: 0.32, y: 0.50))
+                rockIsland(in: size, at: CGPoint(x: 0.68, y: 0.58))
+
+                // Floating music cues
+                musicalNotes(in: size, at: CGPoint(x: 0.52, y: 0.10))
+                musicalNotes(in: size, at: CGPoint(x: 0.70, y: 0.70))
+
+                waves(in: size)
+            }
         }
     }
     
-    private func palmTree(at position: CGPoint) -> some View {
-        let width = screenSize.width > 0 ? screenSize.width : 1024
-        let height = screenSize.height > 0 ? screenSize.height : 768
-        
+    private func palmTree(in size: CGSize, at position: CGPoint) -> some View {
+        let width = max(size.width, 1)
+        let height = max(size.height, 1)
+
         return Text("🌴")
             .font(.system(size: 100))
             .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
             .position(x: position.x * width, y: position.y * height)
     }
     
-    private func ship(at position: CGPoint) -> some View {
-        let width = screenSize.width > 0 ? screenSize.width : 1024
-        let height = screenSize.height > 0 ? screenSize.height : 768
+    private func ship(in size: CGSize, at position: CGPoint, badge: Int) -> some View {
+        let width = max(size.width, 1)
+        let height = max(size.height, 1)
         
-        return ZStack {
-            VStack(spacing: 4) {
-                ZStack {
-                    Circle()
-                        .fill(Color.orange)
-                        .frame(width: 45, height: 45)
-                    Text("1")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.white)
-                }
-                Text("⛵")
-                    .font(.system(size: 70))
+        return VStack(spacing: 6) {
+            ZStack {
+                Circle()
+                    .fill(Color.orange)
+                    .frame(width: 48, height: 48)
+                Text("\(badge)")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.white)
             }
+            Text("⛵")
+                .font(.system(size: 70))
         }
         .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
         .position(x: position.x * width, y: position.y * height)
     }
     
-    private func pirateShip(at position: CGPoint) -> some View {
-        let width = screenSize.width > 0 ? screenSize.width : 1024
-        let height = screenSize.height > 0 ? screenSize.height : 768
+    private func pirateShip(in size: CGSize, at position: CGPoint) -> some View {
+        let width = max(size.width, 1)
+        let height = max(size.height, 1)
         
         return HStack(spacing: -10) {
             Text("🏴‍☠️")
@@ -290,25 +297,25 @@ struct HomeView: View {
         .position(x: position.x * width, y: position.y * height)
     }
     
-    private func seaMonster(at position: CGPoint) -> some View {
-        let width = screenSize.width > 0 ? screenSize.width : 1024
-        let height = screenSize.height > 0 ? screenSize.height : 768
+    private func seaMonster(in size: CGSize, at position: CGPoint) -> some View {
+        let width = max(size.width, 1)
+        let height = max(size.height, 1)
         
         return Text("🐉")
-            .font(.system(size: 160))
-            .rotationEffect(.degrees(-15))
+            .font(.system(size: 150))
+            .rotationEffect(.degrees(-10))
             .shadow(color: .black.opacity(0.2), radius: 6, x: 0, y: 3)
             .position(x: position.x * width, y: position.y * height)
     }
     
-    private func rockIsland(at position: CGPoint) -> some View {
-        let width = screenSize.width > 0 ? screenSize.width : 1024
-        let height = screenSize.height > 0 ? screenSize.height : 768
+    private func rockIsland(in size: CGSize, at position: CGPoint) -> some View {
+        let width = max(size.width, 1)
+        let height = max(size.height, 1)
         
         return ZStack {
             Ellipse()
                 .fill(Color.cyan.opacity(0.25))
-                .frame(width: 110, height: 70)
+                .frame(width: 120, height: 80)
             
             Text("🪨")
                 .font(.system(size: 55))
@@ -317,31 +324,31 @@ struct HomeView: View {
         .position(x: position.x * width, y: position.y * height)
     }
     
-    private func musicalNotes(at position: CGPoint) -> some View {
-        let width = screenSize.width > 0 ? screenSize.width : 1024
-        let height = screenSize.height > 0 ? screenSize.height : 768
+    private func musicalNotes(in size: CGSize, at position: CGPoint) -> some View {
+        let width = max(size.width, 1)
+        let height = max(size.height, 1)
         
         return HStack(spacing: 8) {
             Text("♪")
             Text("♫")
             Text("♪")
         }
-        .font(.system(size: 35))
+        .font(.system(size: 30))
         .foregroundColor(.yellow.opacity(0.8))
         .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
         .position(x: position.x * width, y: position.y * height)
     }
     
-    private func waves() -> some View {
-        let width = screenSize.width > 0 ? screenSize.width : 1024
-        let height = screenSize.height > 0 ? screenSize.height : 768
+    private func waves(in size: CGSize) -> some View {
+        let width = max(size.width, 1)
+        let height = max(size.height, 1)
         
         return ZStack {
             ForEach(0..<25, id: \.self) { i in
                 let randomSeed = Double(i) * 123.456
                 Text("〰️")
                     .font(.system(size: 25))
-                    .foregroundColor(.white.opacity(0.3))
+                    .foregroundColor(.white.opacity(0.25))
                     .position(
                         x: CGFloat((randomSeed * 7).truncatingRemainder(dividingBy: Double(width))),
                         y: CGFloat((randomSeed * 11).truncatingRemainder(dividingBy: Double(height)))
@@ -354,32 +361,32 @@ struct HomeView: View {
     // ISLANDS LAYER - Character islands with level cards
     // ---------------------------------------------------------
     private var islandsLayer: some View {
-        ForEach(viewModel.levels) { level in
-            let item = viewModel.progressById[level.id]
-            let isUnlocked = item?.unlocked ?? false
-            let stars = item?.starsUnlocked ?? 0
+        let scale = islandLayout.scale(for: screenSize)
 
-            IslandNodeView(
-                level: level,
-                isUnlocked: isUnlocked,
-                stars: stars,
-                position: getIslandPosition(for: level)
-            ) {
-                handleLevelTap(level, isUnlocked: isUnlocked)
+        return ZStack {
+            ForEach(Array(viewModel.levels.enumerated()), id: \.element.id) { index, element in
+                let level = element
+                let item = viewModel.progressById[level.id]
+                let isUnlocked = item?.unlocked ?? false
+                let stars = item?.starsUnlocked ?? 0
+
+                IslandNodeView(
+                    level: level,
+                    isUnlocked: isUnlocked,
+                    stars: stars,
+                    scale: scale
+                ) {
+                    handleLevelTap(level, isUnlocked: isUnlocked)
+                }
+                .position(
+                    islandLayout.position(
+                        for: index,
+                        total: viewModel.levels.count,
+                        in: screenSize
+                    )
+                )
             }
         }
-    }
-
-    // Island positions from backend mapPosition (normalized 0.0-1.0)
-    private func getIslandPosition(for level: Level) -> CGPoint {
-        let width = screenSize.width > 0 ? screenSize.width : 1024
-        let height = screenSize.height > 0 ? screenSize.height : 768
-        
-        // Use backend mapPosition directly - it's already normalized
-        return CGPoint(
-            x: CGFloat(level.mapPosition.x) * width,
-            y: CGFloat(level.mapPosition.y) * height + 60
-        )
     }
     
     private func handleLevelTap(_ level: Level, isUnlocked: Bool) {
@@ -405,7 +412,7 @@ struct IslandNodeView: View {
     let level: Level
     let isUnlocked: Bool
     let stars: Int
-    let position: CGPoint
+    let scale: CGFloat
     let onTap: () -> Void
 
     var body: some View {
@@ -593,7 +600,7 @@ struct IslandNodeView: View {
             }
         }
         .frame(width: 320, height: 320)
-        .position(position)
+        .scaleEffect(scale)
     }
 }
 
@@ -606,5 +613,137 @@ struct HomeView_Previews: PreviewProvider {
             .environmentObject(UserSession())
             .environmentObject(AppRouter())
             .previewInterfaceOrientation(.landscapeRight)
+    }
+}
+
+private enum OceanBackgroundProvider {
+    static var source: GIFBackgroundView.Source? {
+        if let asset = NSDataAsset(name: "oceanbackground") {
+            return .data(asset.data)
+        }
+
+        if let url = Bundle.main.url(forResource: "ocean", withExtension: "gif") {
+            return .fileURL(url)
+        }
+
+        return nil
+    }
+}
+
+private struct GIFBackgroundView: UIViewRepresentable {
+    enum Source {
+        case data(Data)
+        case fileURL(URL)
+    }
+
+    let source: Source
+
+    func makeUIView(context: Context) -> WKWebView {
+        let webView = WKWebView()
+        configure(webView)
+        loadContent(on: webView)
+        return webView
+    }
+
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        loadContent(on: uiView)
+    }
+
+    private func configure(_ webView: WKWebView) {
+        webView.isOpaque = false
+        webView.backgroundColor = .clear
+        webView.scrollView.isScrollEnabled = false
+        webView.scrollView.backgroundColor = .clear
+    }
+
+    private func loadContent(on webView: WKWebView) {
+        guard let base64 = encodedData() else {
+            webView.loadHTMLString("", baseURL: nil)
+            return
+        }
+
+        let html = GIFBackgroundView.htmlWrapper(base64: base64)
+        webView.loadHTMLString(html, baseURL: nil)
+    }
+
+    private func encodedData() -> String? {
+        switch source {
+        case .data(let data):
+            return data.base64EncodedString()
+        case .fileURL(let url):
+            return try? Data(contentsOf: url).base64EncodedString()
+        }
+    }
+
+    private static func htmlWrapper(base64: String) -> String {
+        """
+        <html>
+            <head>
+                <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+                <style>
+                    html, body {
+                        margin: 0;
+                        padding: 0;
+                        background: transparent;
+                        overflow: hidden;
+                        height: 100%;
+                    }
+                    img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                    }
+                </style>
+            </head>
+            <body>
+                <img src='data:image/gif;base64,\(base64)' alt='ocean'/>
+            </body>
+        </html>
+        """
+    }
+}
+
+private struct IslandLayoutGuide {
+    let columns: Int = 3
+    let horizontalPadding: CGFloat = 120
+    let topInset: CGFloat = 290
+    let bottomInset: CGFloat = 140
+    let firstRowLowering: CGFloat = 60
+
+    func position(for index: Int, total: Int, in size: CGSize) -> CGPoint {
+        guard size.width > 0 && size.height > 0 else {
+            let fallbackX = 200 + CGFloat(index % columns) * 220
+            let fallbackY = 220 + CGFloat(index / columns) * 200
+            return CGPoint(x: fallbackX, y: fallbackY)
+        }
+
+        let rows = max(1, Int(ceil(Double(total) / Double(columns))))
+        let column = index % columns
+        let row = index / columns
+
+        let availableWidth = max(0, size.width - (horizontalPadding * 2))
+        let columnSpacing = columns > 1 ? availableWidth / CGFloat(columns - 1) : 0
+        let xPosition: CGFloat
+        if columns == 1 {
+            xPosition = size.width / 2
+        } else {
+            xPosition = horizontalPadding + CGFloat(column) * columnSpacing
+        }
+
+        let availableHeight = max(0, size.height - topInset - bottomInset)
+        let rowSpacing = rows > 1 ? availableHeight / CGFloat(rows - 1) : 0
+        let rowOffset = row == 0 ? firstRowLowering : 0
+        let yPosition = topInset + CGFloat(row) * rowSpacing + rowOffset
+
+        return CGPoint(x: xPosition, y: yPosition)
+    }
+
+    func scale(for size: CGSize) -> CGFloat {
+        guard size.width > 0 else { return 1.0 }
+        let referenceWidth: CGFloat = 1024
+        let ratio = size.width / referenceWidth
+        let minScale: CGFloat = 0.75
+        let maxScale: CGFloat = 1.15
+        return min(max(ratio, minScale), maxScale)
     }
 }

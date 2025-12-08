@@ -86,6 +86,30 @@
 		F3A061BD2F2A7B7600C2288E /* AppPreferences+Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A061BC2F2A7B7600C2288E /* AppPreferences+Keys.swift */; };
 		F3C0D1E22FE3A4B500112233 /* Models/PianoMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C0D1E12FE3A4B500112233 /* Models/PianoMode.swift */; };
 		F3C0D1F22FE3B5C400112233 /* BackendConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C0D1F12FE3B5C400112233 /* BackendConfig.swift */; };
+		FA2E7B392EE6660C001CE87C /* note_fa.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B322EE6660C001CE87C /* note_fa.mp3 */; };
+		FA2E7B3A2EE6660C001CE87C /* g_sharp.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B292EE6660C001CE87C /* g_sharp.mp3 */; };
+		FA2E7B3B2EE6660C001CE87C /* c_sharp.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B242EE6660C001CE87C /* c_sharp.mp3 */; };
+		FA2E7B3C2EE6660C001CE87C /* guitar_la.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B2C2EE6660C001CE87C /* guitar_la.mp3 */; };
+		FA2E7B3D2EE6660C001CE87C /* d_sharp.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B272EE6660C001CE87C /* d_sharp.mp3 */; };
+		FA2E7B3E2EE6660C001CE87C /* note_do.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B312EE6660C001CE87C /* note_do.mp3 */; };
+		FA2E7B3F2EE6660C001CE87C /* note_re.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B352EE6660C001CE87C /* note_re.mp3 */; };
+		FA2E7B402EE6660C001CE87C /* guitar_re.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B2E2EE6660C001CE87C /* guitar_re.mp3 */; };
+		FA2E7B412EE6660C001CE87C /* note_sol.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B372EE6660C001CE87C /* note_sol.mp3 */; };
+		FA2E7B422EE6660C001CE87C /* guitar_si.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B2F2EE6660C001CE87C /* guitar_si.mp3 */; };
+		FA2E7B432EE6660C001CE87C /* a_sharp.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B222EE6660C001CE87C /* a_sharp.mp3 */; };
+		FA2E7B442EE6660C001CE87C /* click2.wav in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B262EE6660C001CE87C /* click2.wav */; };
+		FA2E7B452EE6660C001CE87C /* bg_music.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B232EE6660C001CE87C /* bg_music.mp3 */; };
+		FA2E7B462EE6660C001CE87C /* guitar_fa.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B2B2EE6660C001CE87C /* guitar_fa.mp3 */; };
+		FA2E7B472EE6660C001CE87C /* note_la.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B332EE6660C001CE87C /* note_la.mp3 */; };
+		FA2E7B482EE6660C001CE87C /* guitar_mi.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B2D2EE6660C001CE87C /* guitar_mi.mp3 */; };
+		FA2E7B492EE6660C001CE87C /* note_mi.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B342EE6660C001CE87C /* note_mi.mp3 */; };
+		FA2E7B4A2EE6660C001CE87C /* click1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B252EE6660C001CE87C /* click1.mp3 */; };
+		FA2E7B4B2EE6660C001CE87C /* typing_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B382EE6660C001CE87C /* typing_sound.mp3 */; };
+		FA2E7B4C2EE6660C001CE87C /* guitar_do.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B2A2EE6660C001CE87C /* guitar_do.mp3 */; };
+		FA2E7B4D2EE6660C001CE87C /* note_si.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B362EE6660C001CE87C /* note_si.mp3 */; };
+		FA2E7B4E2EE6660C001CE87C /* guitar_sol.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B302EE6660C001CE87C /* guitar_sol.mp3 */; };
+		FA2E7B4F2EE6660C001CE87C /* f_sharp.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B282EE6660C001CE87C /* f_sharp.mp3 */; };
+		FA2E7B512EE6736A001CE87C /* spiderman-preview.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B502EE6736A001CE87C /* spiderman-preview.mp3 */; };
 		FA3CA5322EE49EBC00128A97 /* batman-preview.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA3CA5312EE49EBB00128A97 /* batman-preview.mp3 */; };
 		FAB844FC2EE4AA7500C7B9B4 /* FallingNotesGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB844F72EE4AA7400C7B9B4 /* FallingNotesGame.swift */; };
 		FAC590F62EDA633C0090D5E4 /* PitchDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC590F52EDA633C0090D5E4 /* PitchDetector.swift */; };
@@ -190,6 +214,30 @@
 		F3C0D1E12FE3A4B500112233 /* Models/PianoMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/PianoMode.swift; sourceTree = "<group>"; };
 		F3C0D1F12FE3B5C400112233 /* BackendConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendConfig.swift; sourceTree = "<group>"; };
 		F6A7B8C9D0E1234567890123 /* sol.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = sol.mp3; sourceTree = "<group>"; };
+		FA2E7B222EE6660C001CE87C /* a_sharp.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = a_sharp.mp3; sourceTree = "<group>"; };
+		FA2E7B232EE6660C001CE87C /* bg_music.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bg_music.mp3; sourceTree = "<group>"; };
+		FA2E7B242EE6660C001CE87C /* c_sharp.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = c_sharp.mp3; sourceTree = "<group>"; };
+		FA2E7B252EE6660C001CE87C /* click1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = click1.mp3; sourceTree = "<group>"; };
+		FA2E7B262EE6660C001CE87C /* click2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = click2.wav; sourceTree = "<group>"; };
+		FA2E7B272EE6660C001CE87C /* d_sharp.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = d_sharp.mp3; sourceTree = "<group>"; };
+		FA2E7B282EE6660C001CE87C /* f_sharp.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = f_sharp.mp3; sourceTree = "<group>"; };
+		FA2E7B292EE6660C001CE87C /* g_sharp.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = g_sharp.mp3; sourceTree = "<group>"; };
+		FA2E7B2A2EE6660C001CE87C /* guitar_do.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = guitar_do.mp3; sourceTree = "<group>"; };
+		FA2E7B2B2EE6660C001CE87C /* guitar_fa.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = guitar_fa.mp3; sourceTree = "<group>"; };
+		FA2E7B2C2EE6660C001CE87C /* guitar_la.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = guitar_la.mp3; sourceTree = "<group>"; };
+		FA2E7B2D2EE6660C001CE87C /* guitar_mi.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = guitar_mi.mp3; sourceTree = "<group>"; };
+		FA2E7B2E2EE6660C001CE87C /* guitar_re.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = guitar_re.mp3; sourceTree = "<group>"; };
+		FA2E7B2F2EE6660C001CE87C /* guitar_si.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = guitar_si.mp3; sourceTree = "<group>"; };
+		FA2E7B302EE6660C001CE87C /* guitar_sol.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = guitar_sol.mp3; sourceTree = "<group>"; };
+		FA2E7B312EE6660C001CE87C /* note_do.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = note_do.mp3; sourceTree = "<group>"; };
+		FA2E7B322EE6660C001CE87C /* note_fa.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = note_fa.mp3; sourceTree = "<group>"; };
+		FA2E7B332EE6660C001CE87C /* note_la.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = note_la.mp3; sourceTree = "<group>"; };
+		FA2E7B342EE6660C001CE87C /* note_mi.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = note_mi.mp3; sourceTree = "<group>"; };
+		FA2E7B352EE6660C001CE87C /* note_re.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = note_re.mp3; sourceTree = "<group>"; };
+		FA2E7B362EE6660C001CE87C /* note_si.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = note_si.mp3; sourceTree = "<group>"; };
+		FA2E7B372EE6660C001CE87C /* note_sol.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = note_sol.mp3; sourceTree = "<group>"; };
+		FA2E7B382EE6660C001CE87C /* typing_sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = typing_sound.mp3; sourceTree = "<group>"; };
+		FA2E7B502EE6736A001CE87C /* spiderman-preview.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "spiderman-preview.mp3"; sourceTree = "<group>"; };
 		FA3CA5312EE49EBB00128A97 /* batman-preview.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "batman-preview.mp3"; sourceTree = "<group>"; };
 		FAB844F72EE4AA7400C7B9B4 /* FallingNotesGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallingNotesGame.swift; sourceTree = "<group>"; };
 		FAC590F52EDA633C0090D5E4 /* PitchDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchDetector.swift; sourceTree = "<group>"; };
@@ -409,6 +457,30 @@
 		2F5B7D7B2EC669AD00647B8D /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				FA2E7B502EE6736A001CE87C /* spiderman-preview.mp3 */,
+				FA2E7B222EE6660C001CE87C /* a_sharp.mp3 */,
+				FA2E7B232EE6660C001CE87C /* bg_music.mp3 */,
+				FA2E7B242EE6660C001CE87C /* c_sharp.mp3 */,
+				FA2E7B252EE6660C001CE87C /* click1.mp3 */,
+				FA2E7B262EE6660C001CE87C /* click2.wav */,
+				FA2E7B272EE6660C001CE87C /* d_sharp.mp3 */,
+				FA2E7B282EE6660C001CE87C /* f_sharp.mp3 */,
+				FA2E7B292EE6660C001CE87C /* g_sharp.mp3 */,
+				FA2E7B2A2EE6660C001CE87C /* guitar_do.mp3 */,
+				FA2E7B2B2EE6660C001CE87C /* guitar_fa.mp3 */,
+				FA2E7B2C2EE6660C001CE87C /* guitar_la.mp3 */,
+				FA2E7B2D2EE6660C001CE87C /* guitar_mi.mp3 */,
+				FA2E7B2E2EE6660C001CE87C /* guitar_re.mp3 */,
+				FA2E7B2F2EE6660C001CE87C /* guitar_si.mp3 */,
+				FA2E7B302EE6660C001CE87C /* guitar_sol.mp3 */,
+				FA2E7B312EE6660C001CE87C /* note_do.mp3 */,
+				FA2E7B322EE6660C001CE87C /* note_fa.mp3 */,
+				FA2E7B332EE6660C001CE87C /* note_la.mp3 */,
+				FA2E7B342EE6660C001CE87C /* note_mi.mp3 */,
+				FA2E7B352EE6660C001CE87C /* note_re.mp3 */,
+				FA2E7B362EE6660C001CE87C /* note_si.mp3 */,
+				FA2E7B372EE6660C001CE87C /* note_sol.mp3 */,
+				FA2E7B382EE6660C001CE87C /* typing_sound.mp3 */,
 				FA3CA5312EE49EBB00128A97 /* batman-preview.mp3 */,
 				2F5B7D652EC668B200647B8D /* Assets.xcassets */,
 				D1E2F3A4B5C6789012345678 /* do.mp3 */,
@@ -792,6 +864,30 @@
 				E2F3A4B5C6D7890123456789 /* re.mp3 in Resources */,
 				A3B4C5D6E7F8901234567890 /* mi.mp3 in Resources */,
 				C4D5E6F7A8B9012345678901 /* fa.mp3 in Resources */,
+				FA2E7B392EE6660C001CE87C /* note_fa.mp3 in Resources */,
+				FA2E7B3A2EE6660C001CE87C /* g_sharp.mp3 in Resources */,
+				FA2E7B3B2EE6660C001CE87C /* c_sharp.mp3 in Resources */,
+				FA2E7B3C2EE6660C001CE87C /* guitar_la.mp3 in Resources */,
+				FA2E7B3D2EE6660C001CE87C /* d_sharp.mp3 in Resources */,
+				FA2E7B3E2EE6660C001CE87C /* note_do.mp3 in Resources */,
+				FA2E7B3F2EE6660C001CE87C /* note_re.mp3 in Resources */,
+				FA2E7B402EE6660C001CE87C /* guitar_re.mp3 in Resources */,
+				FA2E7B412EE6660C001CE87C /* note_sol.mp3 in Resources */,
+				FA2E7B422EE6660C001CE87C /* guitar_si.mp3 in Resources */,
+				FA2E7B432EE6660C001CE87C /* a_sharp.mp3 in Resources */,
+				FA2E7B442EE6660C001CE87C /* click2.wav in Resources */,
+				FA2E7B452EE6660C001CE87C /* bg_music.mp3 in Resources */,
+				FA2E7B462EE6660C001CE87C /* guitar_fa.mp3 in Resources */,
+				FA2E7B472EE6660C001CE87C /* note_la.mp3 in Resources */,
+				FA2E7B482EE6660C001CE87C /* guitar_mi.mp3 in Resources */,
+				FA2E7B492EE6660C001CE87C /* note_mi.mp3 in Resources */,
+				FA2E7B4A2EE6660C001CE87C /* click1.mp3 in Resources */,
+				FA2E7B4B2EE6660C001CE87C /* typing_sound.mp3 in Resources */,
+				FA2E7B4C2EE6660C001CE87C /* guitar_do.mp3 in Resources */,
+				FA2E7B512EE6736A001CE87C /* spiderman-preview.mp3 in Resources */,
+				FA2E7B4D2EE6660C001CE87C /* note_si.mp3 in Resources */,
+				FA2E7B4E2EE6660C001CE87C /* guitar_sol.mp3 in Resources */,
+				FA2E7B4F2EE6660C001CE87C /* f_sharp.mp3 in Resources */,
 				E5F6A7B8C9D0123456789012 /* sol.mp3 in Resources */,
 				A6B7C8D9E0F1234567890123 /* la.mp3 in Resources */,
 				C7D8E9F0A1B2345678901234 /* si.mp3 in Resources */,

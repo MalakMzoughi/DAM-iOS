@@ -13,6 +13,7 @@ struct Sublevel: Identifiable, Codable {
     let index: Int
     let difficulty: Int
     let notes: [String]
+    let noteDurations: [String]?
     let maxStars: Int
     let requiredStars: Int
     // Optional runtime fields provided by backend about progress/unlock state
@@ -35,6 +36,7 @@ struct Sublevel: Identifiable, Codable {
         case notes
         case maxStars
         case requiredStars
+        case noteDurations
         case unlocked
         case starsEarned
         case stars
@@ -53,6 +55,7 @@ struct Sublevel: Identifiable, Codable {
          index: Int,
          difficulty: Int,
          notes: [String],
+         noteDurations: [String]? = nil,
          maxStars: Int,
          requiredStars: Int,
          unlocked: Bool? = nil,
@@ -70,6 +73,7 @@ struct Sublevel: Identifiable, Codable {
         self.index = index
         self.difficulty = difficulty
         self.notes = notes
+        self.noteDurations = noteDurations
         self.maxStars = maxStars
         self.requiredStars = requiredStars
         self.unlocked = unlocked
@@ -93,6 +97,7 @@ struct Sublevel: Identifiable, Codable {
         notes = try container.decode([String].self, forKey: .notes)
         maxStars = try container.decode(Int.self, forKey: .maxStars)
         requiredStars = try container.decode(Int.self, forKey: .requiredStars)
+        noteDurations = try container.decodeIfPresent([String].self, forKey: .noteDurations)
         unlocked = try container.decodeIfPresent(Bool.self, forKey: .unlocked)
         let starsDirect = try container.decodeIfPresent(Int.self, forKey: .starsEarned)
         let starsFallback = try container.decodeIfPresent(Int.self, forKey: .stars)
@@ -116,6 +121,7 @@ struct Sublevel: Identifiable, Codable {
         try container.encode(notes, forKey: .notes)
         try container.encode(maxStars, forKey: .maxStars)
         try container.encode(requiredStars, forKey: .requiredStars)
+        try container.encodeIfPresent(noteDurations, forKey: .noteDurations)
         try container.encodeIfPresent(unlocked, forKey: .unlocked)
         try container.encodeIfPresent(starsEarned, forKey: .starsEarned)
         try container.encodeIfPresent(starsEarned, forKey: .stars)

@@ -26,7 +26,7 @@
 	<key>GIDClientID</key>
 	<string>com.googleusercontent.apps.99264359525-6i3m3epo6dnga0gibr94nf22qoq54fi0</string>
 	<key>API_BASE_URL</key>
-	<string>http://192.168.1.19:3000</string>
+	<string>http://192.168.100.52:3000</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
@@ -53,11 +53,11 @@
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
 			</dict>
-				<key>192.168.1.103</key>
-				<dict>
-					<key>NSExceptionAllowsInsecureHTTPLoads</key>
-					<true/>
-				</dict>
+			<key>192.168.1.103</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
 		</dict>
 	</dict>
 	<key>NSMicrophoneUsageDescription</key>

@@ -2,15 +2,18 @@
 //  LevelScreen.swift
 //  DAM-iOS
 //
-//  Fixed layout to match Android version
+//  Layout aligned with Android LevelScreen
 //
 
 import SwiftUI
 import AVFoundation
 import Foundation
+import UIKit
+import WebKit
+import Combine
 
 struct LevelScreen: View {
-    
+
     // --------------------------------------------------
     // ENVIRONMENT + STATE
     // --------------------------------------------------
@@ -31,10 +34,40 @@ struct LevelScreen: View {
     @State private var currentSublevel: Sublevel?
     @State private var allSublevels: [Sublevel] = []
     @State private var currentSublevelIndex = 0
+    @State private var pressedNote: String?
     
     let level: Level
     let sublevel: Sublevel
     private let showsIntroAndSublevelSelection: Bool
+
+    private var isBatmanTheme: Bool {
+        level.theme.lowercased().contains("batman")
+    }
+
+    private var isSpiderTheme: Bool {
+        level.theme.lowercased().contains("spider")
+    }
+
+    private var previewFallbackResource: String? {
+        if isBatmanTheme { return "batman-preview" }
+        if isSpiderTheme { return "spiderman-preview" }
+        return nil
+    }
+
+    private var previewAudioSourceURL: String? {
+        if isSpiderTheme || isBatmanTheme {
+            return nil
+        }
+        return level.previewAudioUrl ?? level.musicUrl
+    }
+
+    private var avatarImageURL: URL? {
+        if let avatarURL = userSession.activeAvatar?.avatarImageUrl,
+           let url = URL(string: avatarURL) {
+            return url
+        }
+        return userSession.profile.photoUrl
+    }
 
     init(level: Level, sublevel: Sublevel, pianoMode: PianoMode = .appPiano, showsIntroAndSublevelSelection: Bool = true) {
         self.level = level
@@ -109,7 +142,9 @@ struct LevelScreen: View {
             
             if showPreview && currentSublevel != nil {
                 PreviewDialog(
-                    musicUrl: level.musicUrl,
+                    audioUrl: previewAudioSourceURL,
+                    fallbackResource: previewFallbackResource,
+                    autoPlay: level.autoPlayPreview ?? true,
                     onDismiss: {
                         withAnimation {
                             showPreview = false
@@ -197,10 +232,31 @@ struct LevelScreen: View {
     // --------------------------------------------------
     private func loadSublevels() {
         Task {
-            let repo = SublevelRepository()
-            if let sublevels = await repo.getSublevelsByLevel(level.id) {
+            let baseRepo = SublevelRepository()
+            let progressRepo = SublevelProgressRepository()
+
+            var fetched: [Sublevel]? = nil
+
+            if userSession.isLoggedIn {
+                fetched = await progressRepo.getUserSublevels(
+                    userId: userSession.profile.id,
+                    levelId: level.id
+                )
+            }
+
+            if fetched == nil {
+                fetched = await baseRepo.getSublevelsByLevel(level.id)
+            }
+
+            if let sublevels = fetched {
                 await MainActor.run {
-                    self.allSublevels = sublevels.sorted { $0.index < $1.index }
+                    let sorted = sublevels.sorted { $0.index < $1.index }
+                    self.allSublevels = sorted
+
+                    if let active = self.currentSublevel,
+                       let refreshed = sorted.first(where: { $0.id == active.id }) {
+                        self.currentSublevel = refreshed
+                    }
                 }
             }
         }
@@ -265,11 +321,32 @@ struct LevelScreen: View {
     // --------------------------------------------------
     // RESET LOGIC
     // --------------------------------------------------
+    private var animatedGifSource: GIFPlayerView.Source? {
+        if let urlString = level.backgroundUrl,
+           urlString.lowercased().hasSuffix(".gif"),
+           let url = URL(string: urlString) {
+            return .remote(url)
+        }
+
+        if isBatmanTheme, let data = GifLoader.batmanBackgroundData {
+            return .data(data)
+        }
+
+        if isSpiderTheme, let data = GifLoader.spidermanBackgroundData {
+            return .data(data)
+        }
+
+        return nil
+    }
+
     private func resetLevel() {
         showFailDialog = false
-        viewModel.reset()
-        if pianoMode == .realPiano {
-            pitchDetector.startListening()
+        showSuccessDialog = false
+        showPreview = false
+        if let activeSublevel = currentSublevel {
+            startGameplay(with: activeSublevel, mode: pianoMode)
+        } else {
+            viewModel.reset()
         }
     }
     
@@ -302,161 +379,72 @@ struct LevelScreen: View {
             return "heroBatman"
         }
     }
+
+    private var shouldUseAvatarForHeroCard: Bool {
+        isSpiderTheme
+    }
     
     // --------------------------------------------------
-    // GAMEPLAY UI - FIXED LAYOUT
+    // GAMEPLAY UI - ANDROID-ALIGNED LAYOUT
     // --------------------------------------------------
     private var gameplayUI: some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
-                // TOP BAR: Score + Lives
-                HStack {
-                    HStack(spacing: 6) {
-                        Text("Score:")
-                            .font(.system(size: 14, weight: .semibold))
-                        Text("\(viewModel.score)")
-                            .font(.system(size: 18, weight: .bold))
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.purple.opacity(0.85))
-                    )
-                    
-                    Spacer()
-                    
-                    HStack(spacing: 8) {
-                        ForEach(0..<3, id: \.self) { index in
-                            Image(systemName: "heart.fill")
-                                .foregroundColor(index < viewModel.lives ? .red : Color.white.opacity(0.3))
-                                .font(.system(size: 24))
-                        }
-                    }
+                let bottomSectionHeight: CGFloat = pianoMode == .appPiano ? 230 : 170
+                let topBarHeight: CGFloat = 76
+                let gameAreaHeight = max(geometry.size.height - topBarHeight - bottomSectionHeight, 240)
+
+                // TOP BAR
+                HStack(spacing: 12) {
+                    exitButton
+
+                    progressBadge(progress: viewModel.progress, score: viewModel.score)
+                        .frame(width: 140, height: 60)
+
+                    starProgressBar(progress: viewModel.progress, stars: starsForProgress(viewModel.progress))
+                        .frame(height: 42)
+
+                    livesStrip
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .frame(height: 60)
-                
-                // MAIN GAME AREA: Hero + Lanes + Boss
-                // Calculate available height for game area
-                let bottomSectionHeight: CGFloat = 160
-                let topBarHeight: CGFloat = 60
-                let gameAreaHeight = geometry.size.height - topBarHeight - bottomSectionHeight
-                
-                HStack(alignment: .top, spacing: 6) {
-                    // HERO CARD
-                    VStack(spacing: 4) {
-                        ZStack(alignment: .topTrailing) {
-                            Image(heroImageName(for: level.theme))
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 90, height: 130)
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color.cyan, lineWidth: 2)
-                                )
-                            
-                            Circle()
-                                .fill(Color.green)
-                                .frame(width: 24, height: 24)
-                                .overlay(
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(.white)
-                                        .font(.system(size: 12, weight: .bold))
-                                )
-                                .offset(x: 6, y: -6)
-                        }
-                        
-                        Text("HERO")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 4)
-                            .background(
-                                RoundedRectangle(cornerRadius: 5)
-                                    .fill(Color.orange.opacity(0.8))
-                            )
-                    }
-                    .frame(width: 90)
-                    
-                    // VERTICAL LANES WITH FALLING NOTES
-                    verticalLanesView(geometry: geometry)
+                .padding(.top, 10)
+                .frame(height: topBarHeight)
+
+                // MAIN GAME AREA
+                ZStack {
+                    verticalLanesView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    
-                    // BOSS CARD
-                    VStack(spacing: 4) {
-                        if let bossURL = level.bossUrl, let url = URL(string: bossURL) {
-                            AsyncImage(url: url) { img in
-                                img.resizable()
-                                    .scaledToFill()
-                            } placeholder: {
-                                Color.purple.opacity(0.3)
-                            }
-                            .frame(width: 90, height: 130)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.red, lineWidth: 2)
-                            )
+                        .padding(.horizontal, 16)
+
+                    HStack(alignment: .top) {
+                        if isBatmanTheme {
+                            avatarCardView
+                            Spacer()
+                            bossCardView
+                        } else {
+                            heroCardView
+                            Spacer()
+                            bossCardView
                         }
-                        
-                        Text("BOSS")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 4)
-                            .background(
-                                RoundedRectangle(cornerRadius: 5)
-                                    .fill(Color.red.opacity(0.8))
-                            )
                     }
-                    .frame(width: 90)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
                 }
-                .padding(.horizontal, 8)
                 .frame(height: gameAreaHeight)
-                
-                // BOTTOM SECTION: Progress + Mode Buttons + Piano/Mic
-                VStack(spacing: 8) {
-                    HStack(spacing: 10) {
-                        // PROGRESS
-                        HStack(spacing: 4) {
-                            Circle()
-                                .fill(Color.gray.opacity(0.4))
-                                .frame(width: 32, height: 32)
-                                .overlay(
-                                    Image(systemName: "person.fill")
-                                        .foregroundColor(.white)
-                                        .font(.system(size: 14))
-                                )
-                            
-                            VStack(alignment: .leading, spacing: 0) {
-                                Text("Progress:")
-                                    .font(.system(size: 9, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.6))
-                                Text("\(Int(viewModel.progress * 100))%")
-                                    .font(.system(size: 12, weight: .bold))
-                                    .foregroundColor(.white)
-                            }
-                        }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 6)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.white.opacity(0.08))
-                        )
-                        
+
+                // BOTTOM CONTROLS
+                VStack(spacing: 10) {
+                    HStack(spacing: 12) {
+                        progressTile
+
                         Spacer()
-                        
-                        // MODE BUTTONS
+
                         HStack(spacing: 10) {
                             modeButton(icon: "music.note", label: "APP PIANO", isSelected: pianoMode == .appPiano, color: .blue) {
                                 pianoMode = .appPiano
                                 cleanupRealPianoAudio()
                             }
-                            
+
                             modeButton(icon: "pianokeys", label: "MY PIANO", isSelected: pianoMode == .realPiano, color: .green) {
                                 pianoMode = .realPiano
                                 soundGen.stop()
@@ -465,89 +453,352 @@ struct LevelScreen: View {
                         }
                     }
                     .padding(.horizontal, 12)
-                    .frame(height: 60)
-                    
-                    // CONDITIONAL UI: PIANO KEYBOARD OR MICROPHONE
+                    .frame(height: 64)
+
                     if pianoMode == .appPiano {
                         pianoKeyboardView
-                            .frame(height: 100)
+                            .frame(height: 130)
                             .padding(.horizontal, 6)
                             .transition(.opacity)
                     } else {
                         microphoneIndicatorView
-                            .frame(height: 100)
+                            .frame(height: 110)
                             .padding(.horizontal, 6)
                             .transition(.opacity)
                     }
                 }
                 .frame(height: bottomSectionHeight)
-                .padding(.bottom, 4)
+                .padding(.bottom, 6)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.black.opacity(0.08))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                        )
+                )
             }
         }
     }
-    
+
     // --------------------------------------------------
-    // VERTICAL LANES VIEW - PROPER SIZING
+    // TOP BAR ELEMENTS
     // --------------------------------------------------
-    private func verticalLanesView(geometry: GeometryProxy) -> some View {
-        let notes = currentSublevel?.notes ?? sublevel.notes
-        
-        return ZStack {
-            // 7 VERTICAL LANES
-            HStack(spacing: 2) {
-                ForEach(0..<7) { laneIndex in
-                    VStack {
-                        Spacer()
+    private var exitButton: some View {
+        Button(action: exitLevel) {
+            Image(systemName: "xmark")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(.white)
+                .frame(width: 44, height: 44)
+                .background(Color.black.opacity(0.12))
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(Color.white.opacity(0.5), lineWidth: 2)
+                )
+        }
+    }
+
+    private func progressBadge(progress: Double, score: Int) -> some View {
+        let clamped = max(0, min(1, progress))
+        return VStack(alignment: .leading, spacing: 4) {
+            Text("Progress")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(.white.opacity(0.8))
+            Text("\(Int(clamped * 100))%")
+                .font(.system(size: 20, weight: .heavy))
+                .foregroundColor(.white)
+            Text("Score \(score)")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(.white.opacity(0.8))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(Color.white.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(color: Color.black.opacity(0.25), radius: 10, x: 0, y: 4)
+    }
+
+    private func starProgressBar(progress: Double, stars: Int) -> some View {
+        let clamped = max(0, min(1, progress))
+        return GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(Color.white.opacity(0.3), lineWidth: 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.white.opacity(0.08))
+                    )
+
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.35), Color.white.opacity(0.15)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(width: geo.size.width * clamped)
+                    .animation(.easeInOut(duration: 0.35), value: clamped)
+
+                HStack(spacing: 16) {
+                    ForEach(0..<3, id: \.self) { index in
+                        let filled = index < stars
+                        Image(systemName: filled ? "star.fill" : "star")
+                            .foregroundColor(filled ? Color.white : Color.white.opacity(0.4))
+                            .font(.system(size: 16, weight: .bold))
+                            .shadow(color: filled ? Color.white.opacity(0.4) : Color.clear, radius: 6)
                     }
-                    .frame(maxWidth: .infinity)
-                    .background(laneColor(for: laneIndex).opacity(0.25))
                 }
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            
-            // FALLING NOTES
-            GeometryReader { geo in
-                ForEach(0..<notes.count, id: \.self) { index in
-                    if index >= viewModel.currentIndex && index < viewModel.currentIndex + 4 {
-                        noteBadge(for: notes[index])
-                            .position(
-                                x: laneXPosition(for: noteLane(notes[index]), width: geo.size.width),
-                                y: noteYPosition(for: index - viewModel.currentIndex, height: geo.size.height)
-                            )
-                    }
-                }
+                .frame(maxWidth: .infinity)
             }
         }
     }
+
+    private var livesStrip: some View {
+        HStack(spacing: 8) {
+            ForEach(0..<3, id: \.self) { index in
+                Image(systemName: "heart.fill")
+                    .foregroundColor(index < viewModel.lives ? .red : Color.white.opacity(0.35))
+                    .font(.system(size: 18))
+                    .padding(6)
+                    .background(Color.black.opacity(0.08))
+                    .clipShape(Circle())
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(Color.black.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.white.opacity(0.25), lineWidth: 1)
+        )
+    }
+
+    private func exitLevel() {
+        if pianoMode == .realPiano {
+            cleanupRealPianoAudio()
+        } else {
+            soundGen.stop()
+        }
+        router.current = .home
+    }
+
+    // --------------------------------------------------
+    // GAME AREA ELEMENTS
+    // --------------------------------------------------
+    private var heroCardView: some View {
+        VStack(spacing: 6) {
+            ZStack(alignment: .topTrailing) {
+                heroCardImageContent()
+                    .frame(width: 110, height: 160)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(Color.white.opacity(0.4), lineWidth: 2)
+                    )
+
+                Circle()
+                    .fill(Color.white.opacity(0.5))
+                    .frame(width: 26, height: 26)
+                    .overlay(
+                        Image(systemName: "checkmark")
+                            .foregroundColor(.black)
+                            .font(.system(size: 12, weight: .bold))
+                    )
+                    .offset(x: 6, y: -6)
+            }
+
+            Text("HERO")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundColor(.white)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.black.opacity(0.55))
+                )
+        }
+        .frame(width: 110)
+    }
+
+    @ViewBuilder
+    private func heroCardImageContent() -> some View {
+        if shouldUseAvatarForHeroCard, let url = avatarImageURL {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                case .failure:
+                    Image(heroImageName(for: level.theme))
+                        .resizable()
+                        .scaledToFill()
+                case .empty:
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .tint(.white)
+                @unknown default:
+                    Image(heroImageName(for: level.theme))
+                        .resizable()
+                        .scaledToFill()
+                }
+            }
+        } else {
+            Image(heroImageName(for: level.theme))
+                .resizable()
+                .scaledToFill()
+        }
+    }
+
+    private var avatarCardView: some View {
+        VStack(spacing: 6) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.black.opacity(0.1))
+                    .frame(width: 150, height: 210)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.white.opacity(0.4), lineWidth: 2)
+                    )
+
+                avatarImageContent()
+                    .frame(width: 150, height: 210)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+            }
+
+            Text("YOUR AVATAR")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundColor(.white)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.black.opacity(0.55))
+                )
+        }
+        .frame(width: 160)
+    }
+
+    @ViewBuilder
+    private func avatarImageContent() -> some View {
+        if let url = avatarImageURL {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                case .failure:
+                    Image(heroImageName(for: level.theme))
+                        .resizable()
+                        .scaledToFill()
+                case .empty:
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .tint(.white)
+                @unknown default:
+                    Color.clear
+                }
+            }
+        } else {
+            Image(heroImageName(for: level.theme))
+                .resizable()
+                .scaledToFill()
+        }
+    }
+
+    private var bossCardView: some View {
+        VStack(spacing: 6) {
+            if let bossURL = level.bossUrl, let url = URL(string: bossURL) {
+                AsyncImage(url: url) { img in
+                    img.resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    Color.black.opacity(0.12)
+                }
+                .frame(width: 110, height: 160)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.white.opacity(0.4), lineWidth: 2)
+                )
+            } else {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.black.opacity(0.12))
+                    .frame(width: 110, height: 160)
+                    .overlay(
+                        Image(systemName: "questionmark")
+                            .foregroundColor(.white.opacity(0.7))
+                    )
+            }
+
+            Text("BOSS")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundColor(.white)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.black.opacity(0.55))
+                )
+        }
+        .frame(width: 110)
+    }
+
+    private var progressTile: some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(Color.white.opacity(0.1))
+                .frame(width: 32, height: 32)
+                .overlay(
+                    Image(systemName: "person.fill")
+                        .foregroundColor(.white)
+                        .font(.system(size: 14))
+                )
+
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Progress")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(.white.opacity(0.7))
+                Text("\(Int(viewModel.progress * 100))%")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(.white)
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.black.opacity(0.08))
+        )
+    }
     
     // --------------------------------------------------
-    // NOTE BADGE
+    // FALLING NOTES BOARD
     // --------------------------------------------------
-    private func noteBadge(for note: String) -> some View {
-        Text(note.uppercased())
-            .font(.system(size: 12, weight: .bold))
-            .foregroundColor(.white)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.blue.opacity(0.9))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.white.opacity(0.5), lineWidth: 1)
-            )
+    private func verticalLanesView() -> some View {
+        FallingNotesBoard(
+            notes: currentSublevel?.notes ?? sublevel.notes,
+            durations: currentSublevel?.noteDurations ?? sublevel.noteDurations,
+            currentIndex: viewModel.currentIndex,
+            isActive: currentSublevel != nil && !showPreview
+        )
+        .id(viewModel.resetStamp)
     }
     
     // --------------------------------------------------
     // MODE BUTTON - COMPACT
     // --------------------------------------------------
-    private func modeButton(icon: String, label: String, isSelected: Bool, color: Color, action: @escaping () -> Void) -> some View {
+    private func modeButton(icon: String, label: String, isSelected: Bool, color _: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(spacing: 3) {
                 ZStack {
                     Circle()
-                        .fill(isSelected ? color : Color.gray.opacity(0.3))
+                        .fill(Color.white.opacity(isSelected ? 0.35 : 0.12))
                         .frame(width: 44, height: 44)
                     
                     Image(systemName: icon)
@@ -595,7 +846,7 @@ struct LevelScreen: View {
             .padding(.vertical, 20)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.black.opacity(0.3))
+                    .fill(Color.black.opacity(0.2))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
                             .stroke(Color.red.opacity(0.5), lineWidth: 2)
@@ -605,61 +856,131 @@ struct LevelScreen: View {
     }
     
     // --------------------------------------------------
-    // PIANO KEYBOARD VIEW - COMPACT
+    // PIANO KEYBOARD VIEW - ANDROID PARITY
     // --------------------------------------------------
     private var pianoKeyboardView: some View {
-        HStack(spacing: 1) {
-            pianoKey(note: "do", label: "Do", color: Color(red: 1.0, green: 0.4, blue: 0.4), hasBlackKey: false)
-            pianoKey(note: "re", label: "Ré", color: Color(red: 1.0, green: 0.5, blue: 0.3), hasBlackKey: true)
-            pianoKey(note: "mi", label: "Mi", color: Color(red: 1.0, green: 0.7, blue: 0.2), hasBlackKey: false)
-            pianoKey(note: "fa", label: "Fa", color: Color(red: 1.0, green: 0.9, blue: 0.3), hasBlackKey: true)
-            pianoKey(note: "sol", label: "Sol", color: Color(red: 0.6, green: 0.9, blue: 0.3), hasBlackKey: true)
-            pianoKey(note: "la", label: "La", color: Color(red: 0.3, green: 0.8, blue: 0.9), hasBlackKey: true)
-            pianoKey(note: "si", label: "Si", color: Color(red: 0.5, green: 0.5, blue: 1.0), hasBlackKey: false)
-        }
-    }
-    
-    // --------------------------------------------------
-    // PIANO KEY - COMPACT VERSION
-    // --------------------------------------------------
-    @ViewBuilder
-    private func pianoKey(note: String, label: String, color: Color, hasBlackKey: Bool) -> some View {
-        Button(action: {
-            handleKeyPress(note)
-        }) {
-            ZStack {
-                // WHITE KEY BACKGROUND
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(color)
-                
-                // BLACK KEY (TOP)
-                if hasBlackKey {
-                    VStack {
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.black)
-                            .frame(width: 20, height: 30)
-                            .offset(y: -10)
-                        
-                        Spacer()
+        GeometryReader { geo in
+            let spacing: CGFloat = 8
+            let whiteKeyCount = PianoKeyboardLayout.whiteKeys.count
+            let keyWidth = max(0, (geo.size.width - spacing * CGFloat(whiteKeyCount - 1)) / CGFloat(whiteKeyCount))
+            let keyHeight = geo.size.height
+            let blackHeight = keyHeight * 0.58
+            let blackWidth = keyWidth * 0.45
+            let blackOffsetX = keyWidth * 0.36
+
+            ZStack(alignment: .topLeading) {
+                HStack(spacing: spacing) {
+                    ForEach(PianoKeyboardLayout.whiteKeys) { descriptor in
+                        whiteKeyButton(descriptor, size: CGSize(width: keyWidth, height: keyHeight))
+                            .frame(width: keyWidth, height: keyHeight)
+                            .zIndex(1)
                     }
                 }
-                
-                // NOTE LABEL (BOTTOM)
-                VStack {
-                    Spacer()
-                    Text(label)
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.black)
-                        .padding(.bottom, 6)
+                .frame(height: keyHeight)
+
+                HStack(spacing: spacing) {
+                    ForEach(PianoKeyboardLayout.whiteKeys) { descriptor in
+                        ZStack(alignment: .topLeading) {
+                            if let black = descriptor.blackKey {
+                                blackKeyButton(black, size: CGSize(width: blackWidth, height: blackHeight))
+                                    .offset(x: blackOffsetX)
+                                    .zIndex(2)
+                            }
+                        }
+                        .frame(width: keyWidth, height: blackHeight, alignment: .topLeading)
+                    }
                 }
+                .padding(.top, keyHeight * 0.01)
             }
         }
-        .buttonStyle(PlainButtonStyle())
+        .frame(height: 150)
+        .padding(.horizontal, 6)
+    }
+
+    private func whiteKeyButton(_ descriptor: PianoKeyboardLayout.WhiteKeyDescriptor, size: CGSize) -> some View {
+        let isPressed = pressedNote == descriptor.note.inputValue
+        return Button {
+            triggerNote(descriptor.note)
+        } label: {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(
+                        LinearGradient(
+                            colors: isPressed ?
+                            [descriptor.color.opacity(0.8), descriptor.color.opacity(0.6)] :
+                            [descriptor.color, descriptor.color.opacity(0.85)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(isPressed ? Color.white.opacity(0.8) : Color.black.opacity(0.25), lineWidth: 2)
+                    )
+                    .shadow(color: Color.black.opacity(0.25), radius: isPressed ? 2 : 4, x: 0, y: isPressed ? 1 : 3)
+
+                VStack(spacing: 2) {
+                    Spacer()
+                    Text(descriptor.note.displayValue)
+                        .font(.system(size: 15, weight: .heavy))
+                        .foregroundColor(.black.opacity(0.75))
+                    Text(descriptor.note.letterValue)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.black.opacity(0.5))
+                        .padding(.bottom, 10)
+                }
+            }
+            .frame(width: size.width, height: size.height)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func blackKeyButton(_ descriptor: PianoKeyboardLayout.BlackKeyDescriptor, size: CGSize) -> some View {
+        let isPressed = pressedNote == descriptor.note.inputValue
+        return Button {
+            triggerNote(descriptor.note)
+        } label: {
+            RoundedRectangle(cornerRadius: 6)
+                .fill(
+                    LinearGradient(
+                        colors: isPressed ?
+                        [Color(white: 0.2), Color(white: 0.35)] :
+                        [Color(white: 0.05), Color(white: 0.2)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(isPressed ? Color.white.opacity(0.7) : Color.black.opacity(0.6), lineWidth: 1.5)
+                )
+                .shadow(color: Color.black.opacity(0.45), radius: 3, x: 0, y: 3)
+                .overlay(
+                    Text(descriptor.note.displayValue)
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.bottom, 6),
+                    alignment: .bottom
+                )
+                .frame(width: size.width, height: size.height)
+        }
+        .buttonStyle(.plain)
+        .contentShape(Rectangle())
     }
     
     // --------------------------------------------------
     // HELPER: HANDLE KEY PRESS
     // --------------------------------------------------
+    private func triggerNote(_ note: PianoKeyboardLayout.PianoNoteDescriptor) {
+        pressedNote = note.inputValue
+        handleKeyPress(note.inputValue)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            if pressedNote == note.inputValue {
+                pressedNote = nil
+            }
+        }
+    }
+
     private func handleKeyPress(_ note: String) {
         if pianoMode == .appPiano {
             soundGen.playNote(noteName: note)
@@ -667,60 +988,23 @@ struct LevelScreen: View {
         viewModel.onNotePlayed(note)
     }
     
-    // --------------------------------------------------
-    // HELPER: LANE COLOR
-    // --------------------------------------------------
-    private func laneColor(for index: Int) -> Color {
-        let colors: [Color] = [
-            Color(red: 0.8, green: 0.2, blue: 0.2),
-            Color(red: 0.5, green: 0.3, blue: 0.2),
-            Color(red: 0.3, green: 0.3, blue: 0.3),
-            Color(red: 0.7, green: 0.6, blue: 0.2),
-            Color(red: 0.2, green: 0.6, blue: 0.3),
-            Color(red: 0.2, green: 0.4, blue: 0.7),
-            Color(red: 0.5, green: 0.3, blue: 0.7),
-        ]
-        return colors[index % colors.count]
-    }
     
-    // --------------------------------------------------
-    // HELPER: NOTE LANE
-    // --------------------------------------------------
-    private func noteLane(_ note: String) -> Int {
-        switch note.lowercased() {
-        case "do": return 0
-        case "re", "ré": return 1
-        case "mi": return 2
-        case "fa": return 3
-        case "sol": return 4
-        case "la": return 5
-        case "si": return 6
-        default: return 0
-        }
+    private func starsForProgress(_ progress: Double) -> Int {
+        if progress >= 0.9 { return 3 }
+        if progress >= 0.7 { return 2 }
+        if progress >= 0.4 { return 1 }
+        return 0
     }
-    
-    // --------------------------------------------------
-    // HELPER: LANE X POSITION
-    // --------------------------------------------------
-    private func laneXPosition(for lane: Int, width: CGFloat) -> CGFloat {
-        let laneWidth = width / 7
-        return laneWidth * CGFloat(lane) + laneWidth / 2
-    }
-    
-    // --------------------------------------------------
-    // HELPER: NOTE Y POSITION
-    // --------------------------------------------------
-    private func noteYPosition(for offset: Int, height: CGFloat) -> CGFloat {
-        let spacing = height / 5
-        return spacing * CGFloat(offset + 1)
-    }
-    
+
     // --------------------------------------------------
     // BACKGROUND
     // --------------------------------------------------
     private var backgroundLayer: some View {
         ZStack {
-            if let bg = level.backgroundUrl, let url = URL(string: bg) {
+            if let gifSource = animatedGifSource {
+                GIFPlayerView(source: gifSource)
+                    .ignoresSafeArea()
+            } else if let bg = level.backgroundUrl, let url = URL(string: bg) {
                 AsyncImage(url: url) { img in
                     img.resizable()
                 } placeholder: { Color.black }
@@ -733,9 +1017,14 @@ struct LevelScreen: View {
             Rectangle()
                 .fill(
                     LinearGradient(
-                        colors: [
-                            Color.black.opacity(0.1),
-                            Color.black.opacity(0.75)
+                        colors: isBatmanTheme ?
+                        [
+                            Color.black.opacity(0.03),
+                            Color(red: 0.6, green: 0.0, blue: 0.0).opacity(0.55)
+                        ] :
+                        [
+                            Color.black.opacity(0.06),
+                            Color.black.opacity(0.6)
                         ],
                         startPoint: .top,
                         endPoint: .bottom
@@ -757,14 +1046,22 @@ struct LevelScreen: View {
                 soundGen.stop()
             }
 
+            var updatedSublevels: [Sublevel]? = nil
+
             if userSession.isLoggedIn {
-                let success = await viewModel.saveProgress(userId: userSession.profile.id)
-                print("LevelScreen: saveProgress success = \(success)")
+                updatedSublevels = await viewModel.saveProgress(userId: userSession.profile.id)
             } else {
                 print("LevelScreen: guest mode – not saving progress")
             }
 
             await MainActor.run {
+                if let updated = updatedSublevels {
+                    self.allSublevels = updated
+                    if let current = self.currentSublevel,
+                       let refreshed = updated.first(where: { $0.id == current.id }) {
+                        self.currentSublevel = refreshed
+                    }
+                }
                 showSuccessDialog = true
             }
         }
@@ -810,15 +1107,6 @@ struct LevelScreen: View {
             .replacingOccurrences(of: "ô", with: "o")
     }
     
-    private func calculateStars(_ score: Int) -> Int {
-        switch score {
-        case 85...: return 3
-        case 60...: return 2
-        case 30...: return 1
-        default: return 0
-        }
-    }
-
     private func cleanupRealPianoAudio() {
         pitchDetector.stopListening()
         soundGen.stop()
@@ -833,6 +1121,343 @@ struct LevelScreen: View {
                 print("⚠️ LevelScreen: Failed to deactivate audio session: \(error)")
             }
         }
+    }
+}
+
+// MARK: - Falling Notes Support
+private struct FallingNoteSprite: Identifiable, Equatable {
+    let id: Int
+    let note: String
+    var offsetY: CGFloat
+    let lane: Int
+    let lengthFactor: CGFloat
+}
+
+private struct FallingNotesBoard: View {
+    let notes: [String]
+    let durations: [String]?
+    let currentIndex: Int
+    let isActive: Bool
+
+    @State private var sprites: [FallingNoteSprite] = []
+    @State private var nextSpawnIndex: Int = 0
+    @State private var lastIndex: Int = 0
+    @State private var spawnOffsets: [CGFloat] = []
+
+    private let laneCount = 7
+    private let baseSpeed: CGFloat = 0.0038
+    private let spawnSpacingBase: CGFloat = 0.18
+    private let freezeThreshold: CGFloat = 0.92
+    private let previewWindow = 5
+    private let maxVisibleOffset: CGFloat = 1.2
+    private let timer = Timer.publish(every: 1.0 / 60.0, tolerance: 0.003, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        let durationSignature = (try? JSONEncoder().encode(durations ?? [])) ?? Data()
+        return GeometryReader { geo in
+            let laneWidth = geo.size.width / CGFloat(laneCount)
+            let containerHeight = geo.size.height
+            ZStack(alignment: .topLeading) {
+                Canvas { context, size in
+                    drawGrid(context: &context, size: size)
+                }
+
+                if notes.isEmpty {
+                    Text("No notes available")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.7))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ForEach(sprites) { sprite in
+                        noteShape(
+                            for: sprite,
+                            laneWidth: laneWidth,
+                            containerHeight: containerHeight
+                        )
+                    }
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+            )
+            .animation(.linear(duration: 0.05), value: sprites)
+        }
+        .onAppear { resetState(startIndex: currentIndex) }
+        .onChange(of: notes) { _ in resetState(startIndex: currentIndex) }
+        .onChange(of: durationSignature) { _ in resetState(startIndex: currentIndex) }
+        .onChange(of: currentIndex) { handleIndexChange($0) }
+        .onReceive(timer) { _ in
+            guard isActive else { return }
+            updateSprites()
+        }
+    }
+
+    private func resetState(startIndex: Int) {
+        let alignmentIndex = min(max(0, startIndex), max(notes.count - 1, 0))
+        spawnOffsets = computeSpawnOffsets(alignedTo: alignmentIndex)
+        sprites = []
+        nextSpawnIndex = min(max(0, startIndex), notes.count)
+        lastIndex = startIndex
+    }
+
+    private func handleIndexChange(_ index: Int) {
+        if index < lastIndex {
+            resetState(startIndex: index)
+            return
+        }
+
+        sprites = sprites.filter { $0.id >= max(0, index - 1) }
+        if nextSpawnIndex < index {
+            nextSpawnIndex = index
+        }
+        lastIndex = index
+    }
+
+    private func updateSprites() {
+        guard !notes.isEmpty else { return }
+
+        var updated = sprites.filter { $0.offsetY <= maxVisibleOffset }
+        for idx in updated.indices {
+            guard updated[idx].id >= max(0, currentIndex - 1) else { continue }
+            let speed = baseSpeed / max(updated[idx].lengthFactor, 0.5)
+            var nextOffset = updated[idx].offsetY + speed
+            if updated[idx].id == currentIndex && nextOffset >= freezeThreshold {
+                nextOffset = min(nextOffset, freezeThreshold)
+            }
+            updated[idx].offsetY = nextOffset
+        }
+        sprites = updated
+        spawnIfNeeded()
+    }
+
+    private func spawnIfNeeded() {
+        guard !notes.isEmpty else { return }
+
+        while nextSpawnIndex < notes.count &&
+                nextSpawnIndex < currentIndex + previewWindow &&
+                !sprites.contains(where: { $0.id == nextSpawnIndex }) {
+
+            let rawNote = notes[nextSpawnIndex]
+            let laneIndex = lane(for: rawNote)
+            let adjustedFactor = clampedLengthFactor(for: nextSpawnIndex)
+            let spawnOffset = spawnOffset(for: nextSpawnIndex, currentSprites: sprites, lengthFactor: adjustedFactor)
+
+            sprites.append(
+                FallingNoteSprite(
+                    id: nextSpawnIndex,
+                    note: rawNote,
+                    offsetY: spawnOffset,
+                    lane: laneIndex,
+                    lengthFactor: adjustedFactor
+                )
+            )
+
+            nextSpawnIndex += 1
+        }
+    }
+
+    private func computeSpawnOffsets(alignedTo index: Int) -> [CGFloat] {
+        guard !notes.isEmpty else { return [] }
+
+        var offsets: [CGFloat] = []
+        var cumulative: CGFloat = 0
+
+        for idx in notes.indices {
+            offsets.append(-0.35 - cumulative)
+            cumulative += spawnSpacingBase * spacingMultiplier(for: idx)
+        }
+
+        if notes.indices.contains(index) {
+            let shift = offsets[index] + 0.35
+            if shift != 0 {
+                for idx in index..<offsets.count {
+                    offsets[idx] -= shift
+                }
+            }
+        }
+
+        return offsets
+    }
+
+    private func spacingMultiplier(for index: Int) -> CGFloat {
+        return clampedLengthFactor(for: index)
+    }
+
+    private func clampedLengthFactor(for index: Int) -> CGFloat {
+        let raw = lengthFactor(for: index)
+        return max(0.7, min(raw, 2.4))
+    }
+
+    private func spawnOffset(for index: Int, currentSprites: [FallingNoteSprite], lengthFactor: CGFloat) -> CGFloat {
+        if spawnOffsets.indices.contains(index) {
+            return spawnOffsets[index]
+        }
+
+        let spacing = spawnSpacingBase * lengthFactor
+        let highestOffset = currentSprites.map(\.offsetY).min() ?? -0.35
+        return min(highestOffset - spacing, -0.35)
+    }
+
+    private func drawGrid(context: inout GraphicsContext, size: CGSize) {
+        let laneWidth = size.width / CGFloat(laneCount)
+
+        for lane in 0..<laneCount {
+            let rect = CGRect(x: CGFloat(lane) * laneWidth, y: 0, width: laneWidth, height: size.height)
+            context.fill(Path(rect), with: .color(laneColor(for: lane).opacity(0.18)))
+
+            if lane > 0 {
+                let divider = CGRect(x: rect.minX, y: 0, width: 0.8, height: size.height)
+                context.fill(Path(divider), with: .color(Color.white.opacity(0.06)))
+            }
+        }
+
+        let busyLanes = Set(sprites.filter { $0.offsetY > -0.15 && $0.offsetY < 1.05 }.map(\.lane))
+        let focusedLane = sprites.first(where: { $0.id == currentIndex })?.lane
+
+        for lane in busyLanes {
+            let rect = CGRect(x: CGFloat(lane) * laneWidth, y: 0, width: laneWidth, height: size.height)
+            let opacity = lane == focusedLane ? 0.24 : 0.12
+            context.fill(Path(rect), with: .color(Color.white.opacity(opacity)))
+        }
+
+        let hitZoneY = size.height * freezeThreshold
+        let lineRect = CGRect(x: 0, y: hitZoneY - 2, width: size.width, height: 4)
+        context.fill(Path(lineRect), with: .color(Color.white))
+
+        let glowRect = CGRect(x: 0, y: hitZoneY - 48, width: size.width, height: 48)
+        context.fill(
+            Path(glowRect),
+            with: .linearGradient(
+                Gradient(colors: [Color.white.opacity(0.25), Color.white.opacity(0.0)]),
+                startPoint: CGPoint(x: 0, y: hitZoneY - 48),
+                endPoint: CGPoint(x: 0, y: hitZoneY)
+            )
+        )
+    }
+
+    private func noteShape(for sprite: FallingNoteSprite, laneWidth: CGFloat, containerHeight: CGFloat) -> some View {
+        let xPos = laneWidth * (CGFloat(sprite.lane) + 0.5)
+        let yPos = containerHeight * sprite.offsetY
+        let noteHeight = max(56, (70 * sprite.lengthFactor) + 36)
+
+        return RoundedRectangle(cornerRadius: 12)
+            .fill(noteGradient(for: sprite))
+            .frame(width: laneWidth * 0.78, height: noteHeight)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(sprite.id == currentIndex ? Color.yellow : Color.white.opacity(0.35), lineWidth: 2)
+            )
+            .overlay(
+                Text(sprite.note.uppercased())
+                    .font(.system(size: 15, weight: .heavy))
+                    .foregroundColor(.white)
+            )
+            .position(x: xPos, y: yPos)
+            .shadow(color: Color.black.opacity(0.25), radius: 10, x: 0, y: 8)
+    }
+
+    private func noteGradient(for sprite: FallingNoteSprite) -> LinearGradient {
+        if sprite.id == currentIndex {
+            return LinearGradient(
+                colors: [
+                    Color(red: 1.0, green: 0.87, blue: 0.36),
+                    Color(red: 1.0, green: 0.64, blue: 0.29)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+
+        return LinearGradient(
+            colors: [
+                Color(red: 0.0, green: 0.85, blue: 1.0),
+                Color(red: 0.39, green: 0.48, blue: 0.91)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private func laneColor(for index: Int) -> Color {
+        let shade = 0.85 - (Double(index % 3) * 0.05)
+        return Color(white: shade)
+    }
+
+    private func lane(for note: String) -> Int {
+        let normalized = normalize(note)
+
+        switch normalized {
+        case "do", "c", "c#", "db": return 0
+        case "re", "d", "ré", "d#", "eb": return 1
+        case "mi", "e", "fb": return 2
+        case "fa", "f", "e#": return 3
+        case "sol", "g", "g#", "ab": return 4
+        case "la", "a", "a#", "bb": return 5
+        case "si", "b", "cb": return 6
+        default: return 0
+        }
+    }
+
+    private func lengthFactor(for index: Int) -> CGFloat {
+        if let durations,
+           durations.indices.contains(index) {
+            let token = durations[index].lowercased()
+            switch token {
+            case "long": return 1.8
+            case "short": return 0.8
+            case "medium": return 1.2
+            default:
+                if let value = Double(token) {
+                    return max(0.5, min(value, 2.5))
+                }
+            }
+        }
+
+        guard notes.indices.contains(index) else { return 1 }
+        let token = normalize(notes[index])
+        if token.contains("hold") { return 1.6 }
+        if token.contains("rest") { return 0.7 }
+        return 1
+    }
+
+    private func normalize(_ raw: String) -> String {
+        var value = raw
+            .lowercased()
+            .replacingOccurrences(of: "é", with: "e")
+            .replacingOccurrences(of: "è", with: "e")
+            .replacingOccurrences(of: "ê", with: "e")
+            .replacingOccurrences(of: "à", with: "a")
+            .replacingOccurrences(of: "ù", with: "u")
+            .replacingOccurrences(of: "ô", with: "o")
+            .replacingOccurrences(of: "♭", with: "b")
+            .replacingOccurrences(of: "♯", with: "#")
+            .replacingOccurrences(of: "sharp", with: "#")
+            .replacingOccurrences(of: "flat", with: "b")
+            .replacingOccurrences(of: " ", with: "")
+
+        var accidental = ""
+        if value.hasSuffix("#") {
+            accidental = "#"
+            value = String(value.dropLast())
+        } else if value.hasSuffix("b") && value.count > 1 {
+            accidental = "b"
+            value = String(value.dropLast())
+        }
+
+        let mapping: [String: String] = [
+            "do": "c", "c": "c",
+            "re": "d", "d": "d",
+            "mi": "e", "e": "e",
+            "fa": "f", "f": "f",
+            "sol": "g", "g": "g",
+            "la": "a", "a": "a",
+            "si": "b", "ti": "b", "b": "b"
+        ]
+
+        let base = mapping[value] ?? value
+        return base + accidental
     }
 }
 
@@ -972,7 +1597,9 @@ struct LevelIntroDialog: View {
 
 // MARK: - Preview Dialog
 struct PreviewDialog: View {
-    let musicUrl: String?
+    let audioUrl: String?
+    let fallbackResource: String?
+    let autoPlay: Bool
     var onDismiss: () -> Void
     
     @State private var isPlaying = false
@@ -980,6 +1607,9 @@ struct PreviewDialog: View {
     @State private var statusObserver: NSKeyValueObservation?
     @State private var showLoadingSpinner = false
     @State private var errorMessage: String?
+    @State private var hasAutoPlayed = false
+    @State private var playbackEndObserver: NSObjectProtocol?
+    @State private var playbackFailureObserver: NSObjectProtocol?
     
     var body: some View {
         ZStack {
@@ -1024,11 +1654,11 @@ struct PreviewDialog: View {
                         .tint(.white)
                         .scaleEffect(1.5)
                 } else {
-                    Button(action: playPreview) {
+                    Button(action: togglePlayback) {
                         HStack(spacing: 12) {
                             Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
                                 .font(.system(size: 32))
-                            Text(isPlaying ? "Playing..." : "Play Theme")
+                            Text(isPlaying ? "Pause Preview" : "Play Theme")
                                 .font(.system(size: 18, weight: .bold))
                         }
                         .frame(maxWidth: .infinity)
@@ -1070,16 +1700,43 @@ struct PreviewDialog: View {
             )
             .padding(24)
         }
-        .onAppear { playPreview() }
+        .onAppear {
+            if autoPlay && !hasAutoPlayed {
+                hasAutoPlayed = true
+                startPlayback()
+            }
+        }
         .onDisappear {
-            player?.pause()
-            statusObserver = nil
+            cleanupPlayer()
         }
     }
     
-    private func playPreview() {
-        guard let audioURL = Bundle.main.url(forResource: "batman-preview", withExtension: "mp3") else {
-            errorMessage = "Audio file not found in bundle"
+    private func togglePlayback() {
+        if showLoadingSpinner {
+            return
+        }
+
+        if isPlaying {
+            player?.pause()
+            isPlaying = false
+            return
+        }
+
+        if let player, player.currentItem?.status == .readyToPlay {
+            player.seek(to: .zero)
+            player.play()
+            isPlaying = true
+        } else {
+            startPlayback()
+        }
+    }
+
+    private func startPlayback() {
+        guard !showLoadingSpinner else { return }
+        cleanupPlayer()
+
+        guard let audioURL = resolvedAudioURL() else {
+            errorMessage = "Preview audio not available"
             return
         }
 
@@ -1090,10 +1747,14 @@ struct PreviewDialog: View {
         let player = AVPlayer(playerItem: playerItem)
         self.player = player
 
-        NotificationCenter.default.addObserver(forName: .AVPlayerItemFailedToPlayToEndTime, object: playerItem, queue: .main) { _ in
+        playbackFailureObserver = NotificationCenter.default.addObserver(forName: .AVPlayerItemFailedToPlayToEndTime, object: playerItem, queue: .main) { _ in
             isPlaying = false
             showLoadingSpinner = false
             errorMessage = "Unable to play preview."
+        }
+
+        playbackEndObserver = NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: playerItem, queue: .main) { _ in
+            isPlaying = false
         }
 
         statusObserver = playerItem.observe(\.status, options: [.new]) { item, _ in
@@ -1113,4 +1774,196 @@ struct PreviewDialog: View {
             }
         }
     }
+
+    private func cleanupPlayer() {
+        player?.pause()
+        player = nil
+        statusObserver = nil
+
+        if let playbackEndObserver {
+            NotificationCenter.default.removeObserver(playbackEndObserver)
+        }
+        if let playbackFailureObserver {
+            NotificationCenter.default.removeObserver(playbackFailureObserver)
+        }
+
+        playbackEndObserver = nil
+        playbackFailureObserver = nil
+        showLoadingSpinner = false
+        isPlaying = false
+    }
+
+    private func resolvedAudioURL() -> URL? {
+        if let urlString = audioUrl, let remoteURL = URL(string: urlString) {
+            return remoteURL
+        }
+
+        if let fallback = fallbackResource,
+           let bundledURL = Bundle.main.url(forResource: fallback, withExtension: "mp3") {
+            return bundledURL
+        }
+
+        return nil
+    }
+}
+
+// MARK: - GIF Utilities
+private struct GIFPlayerView: UIViewRepresentable {
+    enum Source {
+        case data(Data)
+        case remote(URL)
+    }
+
+    let source: Source
+
+    func makeUIView(context: Context) -> WKWebView {
+        let webView = WKWebView()
+        configure(webView)
+        loadContent(on: webView)
+        return webView
+    }
+
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        loadContent(on: uiView)
+    }
+
+    private func configure(_ webView: WKWebView) {
+        webView.isOpaque = false
+        webView.backgroundColor = .clear
+        webView.scrollView.isScrollEnabled = false
+        webView.scrollView.backgroundColor = .clear
+    }
+
+        private func loadContent(on webView: WKWebView) {
+                let htmlString: String
+
+                switch source {
+                case .data(let data):
+                        let base64 = data.base64EncodedString()
+                        htmlString = GIFPlayerView.htmlWrapper(for: "data:image/gif;base64,\(base64)")
+                case .remote(let url):
+                        htmlString = GIFPlayerView.htmlWrapper(for: url.absoluteString)
+                }
+
+                webView.loadHTMLString(htmlString, baseURL: nil)
+    }
+
+        private static func htmlWrapper(for source: String) -> String {
+                """
+                <html>
+                    <head>
+                        <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>
+                        <style>
+                            html, body {
+                                margin: 0;
+                                padding: 0;
+                                background: transparent;
+                                overflow: hidden;
+                                height: 100%;
+                            }
+                            img {
+                                width: 100%;
+                                height: 100%;
+                                object-fit: cover;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <img src='\(source)' alt='gif'/>
+                    </body>
+                </html>
+                """
+        }
+}
+
+private enum GifLoader {
+    static var batmanBackgroundData: Data? {
+        if let asset = NSDataAsset(name: "BatmanLevelBackground") {
+            return asset.data
+        }
+
+        if let url = Bundle.main.url(forResource: "batman-level-bg", withExtension: "gif") {
+            return try? Data(contentsOf: url)
+        }
+
+        return nil
+    }
+
+    static var spidermanBackgroundData: Data? {
+        if let asset = NSDataAsset(name: "SpidermanLevelBackground") {
+            return asset.data
+        }
+
+        if let url = Bundle.main.url(forResource: "spiderman-level-bg", withExtension: "gif") {
+            return try? Data(contentsOf: url)
+        }
+
+        return nil
+    }
+}
+
+private enum PianoKeyboardLayout {
+    struct PianoNoteDescriptor: Identifiable {
+        let id: String
+        let inputValue: String
+        let displayValue: String
+        let letterValue: String
+
+        init(note: String, display: String, letter: String) {
+            self.id = note
+            self.inputValue = note
+            self.displayValue = display
+            self.letterValue = letter
+        }
+    }
+
+    struct BlackKeyDescriptor: Identifiable {
+        let id = UUID()
+        let note: PianoNoteDescriptor
+    }
+
+    struct WhiteKeyDescriptor: Identifiable {
+        let id = UUID()
+        let note: PianoNoteDescriptor
+        let color: Color
+        let blackKey: BlackKeyDescriptor?
+    }
+
+    static let whiteKeys: [WhiteKeyDescriptor] = [
+        WhiteKeyDescriptor(
+            note: PianoNoteDescriptor(note: "do", display: "Do", letter: "C"),
+            color: Color(red: 1.0, green: 0.4, blue: 0.4),
+            blackKey: BlackKeyDescriptor(note: PianoNoteDescriptor(note: "do#", display: "Do#", letter: "C#"))
+        ),
+        WhiteKeyDescriptor(
+            note: PianoNoteDescriptor(note: "re", display: "Ré", letter: "D"),
+            color: Color(red: 1.0, green: 0.5, blue: 0.3),
+            blackKey: BlackKeyDescriptor(note: PianoNoteDescriptor(note: "re#", display: "Ré#", letter: "D#"))
+        ),
+        WhiteKeyDescriptor(
+            note: PianoNoteDescriptor(note: "mi", display: "Mi", letter: "E"),
+            color: Color(red: 1.0, green: 0.7, blue: 0.2),
+            blackKey: nil
+        ),
+        WhiteKeyDescriptor(
+            note: PianoNoteDescriptor(note: "fa", display: "Fa", letter: "F"),
+            color: Color(red: 1.0, green: 0.9, blue: 0.3),
+            blackKey: BlackKeyDescriptor(note: PianoNoteDescriptor(note: "fa#", display: "Fa#", letter: "F#"))
+        ),
+        WhiteKeyDescriptor(
+            note: PianoNoteDescriptor(note: "sol", display: "Sol", letter: "G"),
+            color: Color(red: 0.6, green: 0.9, blue: 0.3),
+            blackKey: BlackKeyDescriptor(note: PianoNoteDescriptor(note: "sol#", display: "Sol#", letter: "G#"))
+        ),
+        WhiteKeyDescriptor(
+            note: PianoNoteDescriptor(note: "la", display: "La", letter: "A"),
+            color: Color(red: 0.3, green: 0.8, blue: 0.9),
+            blackKey: BlackKeyDescriptor(note: PianoNoteDescriptor(note: "la#", display: "La#", letter: "A#"))
+        ),
+        WhiteKeyDescriptor(
+            note: PianoNoteDescriptor(note: "si", display: "Si", letter: "B"),
+            color: Color(red: 0.5, green: 0.5, blue: 1.0),
+            blackKey: nil
+        )
+    ]
 }

@@ -23,6 +23,26 @@ struct UnlockedLevelItem: Identifiable, Codable {
     let bossUrl: String?
     let musicUrl: String?
 
+    init(
+        levelId: String,
+        title: String,
+        theme: String,
+        unlocked: Bool,
+        starsUnlocked: Int,
+        backgroundUrl: String?,
+        bossUrl: String?,
+        musicUrl: String?
+    ) {
+        self.levelId = levelId
+        self.title = title
+        self.theme = theme
+        self.unlocked = unlocked
+        self.starsUnlocked = starsUnlocked
+        self.backgroundUrl = backgroundUrl
+        self.bossUrl = bossUrl
+        self.musicUrl = musicUrl
+    }
+
     enum CodingKeys: String, CodingKey {
         case levelId
         case title

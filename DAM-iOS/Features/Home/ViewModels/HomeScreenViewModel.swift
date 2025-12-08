@@ -138,10 +138,12 @@ class HomeScreenViewModel: ObservableObject {
         userSession: UserSession,
         shouldPersist: Bool
     ) {
-        self.progressById = progress
+        let filledProgress = completeProgressMap(progress, sourceLevels: sourceLevels)
 
-        let totalStars = progress.values.reduce(0) { $0 + $1.starsUnlocked }
-        let unlockedIds = progress.values
+        self.progressById = filledProgress
+
+        let totalStars = filledProgress.values.reduce(0) { $0 + $1.starsUnlocked }
+        let unlockedIds = filledProgress.values
             .filter { $0.unlocked }
             .map { $0.levelId }
         let highestUnlockedOrder = sourceLevels
@@ -150,7 +152,7 @@ class HomeScreenViewModel: ObservableObject {
             .max() ?? 1
 
         if shouldPersist {
-            AppPreferences.shared.setCodable(progress, for: .cachedProgressByLevel)
+            AppPreferences.shared.setCodable(filledProgress, for: .cachedProgressByLevel)
             AppPreferences.shared.set(totalStars, for: .cachedStarCount)
         }
 
@@ -171,4 +173,30 @@ class HomeScreenViewModel: ObservableObject {
             )
         }
     }
+}
+
+// MARK: - Progress Helpers
+private extension HomeScreenViewModel {
+    func completeProgressMap(
+        _ progress: [String: UnlockedLevelItem],
+        sourceLevels: [Level]
+    ) -> [String: UnlockedLevelItem] {
+        guard !sourceLevels.isEmpty else { return progress }
+
+        var updated = progress
+        for level in sourceLevels where updated[level.id] == nil {
+            updated[level.id] = UnlockedLevelItem(
+                levelId: level.id,
+                title: level.title,
+                theme: level.theme,
+                unlocked: false,
+                starsUnlocked: 0,
+                backgroundUrl: level.backgroundUrl,
+                bossUrl: level.bossUrl,
+                musicUrl: level.musicUrl
+            )
+        }
+        return updated
+    }
+
 }

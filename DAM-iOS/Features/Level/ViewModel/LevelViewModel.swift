@@ -26,6 +26,8 @@ class LevelViewModel: ObservableObject {
     @Published var currentIndex: Int = 0
     @Published var score: Int = 0
     @Published var lives: Int = 3
+    @Published var mistakes: Int = 0
+    @Published var resetStamp = UUID()
     
     @Published var wrongMessage: String? = nil
     @Published var isLevelCompleted: Bool = false
@@ -119,10 +121,11 @@ class LevelViewModel: ObservableObject {
     // WRONG NOTE
     // ------------------------------------------------------
     private func handleWrongNote() {
-        lives -= 1
+        mistakes += 1
+        lives = max(0, 3 - mistakes)
         wrongMessage = "Incorrect! Try again 🎵"
         
-        if lives <= 0 {
+        if mistakes >= 3 {
             isFailed = true
         }
     }
@@ -138,9 +141,14 @@ class LevelViewModel: ObservableObject {
         progress = Double(currentIndex) / Double(expectedNotes.count)
     }
 
-    // Current star count based on score (used by UI)
+    // Current star count derived from mistakes (Android parity)
     var starsEarned: Int {
-        calculateStars(from: score)
+        switch mistakes {
+        case 0: return 3
+        case 1: return 2
+        case 2: return 1
+        default: return 0
+        }
     }
     
     // ------------------------------------------------------
@@ -150,31 +158,31 @@ class LevelViewModel: ObservableObject {
         currentIndex = 0
         score = 0
         lives = 3
+        mistakes = 0
         wrongMessage = nil
         isLevelCompleted = false
         isFailed = false
         expectedNotes = currentSublevel.notes
         updateProgress()
+        resetStamp = UUID()
     }
     
     // ------------------------------------------------------
     // SAVE PROGRESS (calls backend /sublevels/progress)
     // ------------------------------------------------------
-    func saveProgress(userId: String) async -> Bool {
-        let stars = calculateStars(from: score)
-
+    func saveProgress(userId: String) async -> [Sublevel]? {
         let request = SublevelProgressRequest(
             userId: userId,
             levelId: level.id,
             sublevelId: currentSublevel.id,
-            stars: stars,
+            stars: starsEarned,
             score: score,
             completed: true
         )
 
         guard let updated = await progressRepo.saveProgress(request) else {
             print("⚠️ LevelViewModel.saveProgress – failed to save sublevel progress")
-            return false
+            return nil
         }
 
         if let refreshed = updated.first(where: { $0.id == currentSublevel.id }) {
@@ -182,17 +190,7 @@ class LevelViewModel: ObservableObject {
         }
 
         print("✅ LevelViewModel.saveProgress – saved progress for sublevel \(currentSublevel.id)")
-        return true
-    }
-
-    // Same thresholds as Android & LevelScreen
-    private func calculateStars(from score: Int) -> Int {
-        switch score {
-        case 85...: return 3
-        case 60...: return 2
-        case 30...: return 1
-        default: return 0
-        }
+        return updated.sorted { $0.index < $1.index }
     }
 
     

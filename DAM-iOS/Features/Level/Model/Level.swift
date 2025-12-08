@@ -18,6 +18,9 @@ struct Level: Identifiable, Codable {
     let backgroundUrl: String?
     let bossUrl: String?
     let musicUrl: String?
+    let previewAudioUrl: String?
+    let previewDuration: Int?
+    let autoPlayPreview: Bool?
     let starsUnlocked: Int
     let mapPosition: MapPosition
     let islandImageUrl: String
@@ -36,6 +39,9 @@ struct Level: Identifiable, Codable {
         case backgroundUrl
         case bossUrl
         case musicUrl
+        case previewAudioUrl
+        case previewDuration
+        case autoPlayPreview
         case starsUnlocked
         case mapPosition
         case islandImageUrl
