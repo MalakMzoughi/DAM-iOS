@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct SublevelListView: View {
     @StateObject private var viewModel = SublevelListViewModel()
@@ -29,9 +30,7 @@ struct SublevelListView: View {
             LinearGradient(colors: themePalette.backgroundGradient, startPoint: .topLeading, endPoint: .bottomTrailing)
                 .ignoresSafeArea()
 
-            Image(themePalette.heroImageName)
-                .resizable()
-                .scaledToFit()
+            heroBackdropImage
                 .frame(width: 260)
                 .opacity(0.12)
                 .offset(y: -200)
@@ -201,6 +200,52 @@ struct SublevelListView: View {
         guard let sub = selectedSublevel, let mode = selectedMode else { return }
         onSelect(sub, mode)
         presentationMode.wrappedValue.dismiss()
+    }
+}
+
+// MARK: - Hero image helpers
+private extension SublevelListView {
+    private var heroAssetName: String? {
+        themePalette.heroImageName == "heroDefault" ? nil : themePalette.heroImageName
+    }
+
+    private var heroRemoteURL: URL? {
+        if let boss = URL.backendAsset(from: level.bossUrl) {
+            return boss
+        }
+        if let background = URL.backendAsset(from: level.backgroundUrl) {
+            return background
+        }
+        return URL.backendAsset(from: level.islandImageUrl)
+    }
+
+    @ViewBuilder
+    private var heroBackdropImage: some View {
+        if let asset = heroAssetName, UIImage(named: asset) != nil {
+            Image(asset)
+                .resizable()
+                .scaledToFit()
+        } else if let url = heroRemoteURL {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().scaledToFit()
+                case .failure:
+                    Image(systemName: "photo")
+                        .resizable()
+                        .scaledToFit()
+                        .foregroundColor(.white.opacity(0.2))
+                case .empty:
+                    ProgressView().tint(.white)
+                @unknown default:
+                    Color.clear
+                }
+            }
+        } else {
+            Image("heroBatman")
+                .resizable()
+                .scaledToFit()
+        }
     }
 }
 

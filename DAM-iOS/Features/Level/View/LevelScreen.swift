@@ -328,12 +328,38 @@ struct LevelScreen: View {
             return .remote(url)
         }
 
-        if isBatmanTheme, let data = GifLoader.batmanBackgroundData {
+        if let data = localGifData {
             return .data(data)
         }
 
-        if isSpiderTheme, let data = GifLoader.spidermanBackgroundData {
-            return .data(data)
+        return nil
+    }
+
+    private var localGifData: Data? {
+        if let assetKey = level.backgroundAssetKey,
+           let assetData = GifLoader.data(named: assetKey) {
+            return assetData
+        }
+
+        switch level.order {
+        case 3:
+            return GifLoader.totoroBackgroundData
+        case 4:
+            return GifLoader.pokemonBackgroundData
+        case 5:
+            return GifLoader.ironmanBackgroundData
+        case 6:
+            return GifLoader.hunterBackgroundData
+        default:
+            break
+        }
+
+        if isBatmanTheme {
+            return GifLoader.batmanBackgroundData
+        }
+
+        if isSpiderTheme {
+            return GifLoader.spidermanBackgroundData
         }
 
         return nil
@@ -381,7 +407,15 @@ struct LevelScreen: View {
     }
 
     private var shouldUseAvatarForHeroCard: Bool {
-        isSpiderTheme
+        isSpiderTheme || [3, 4, 5, 6].contains(level.order)
+    }
+
+    private var shouldShowHeroBubble: Bool {
+        isBatmanTheme || isSpiderTheme
+    }
+
+    private var shouldForceMediumSpeed: Bool {
+        isSpiderTheme && (currentSublevel?.index == 5)
     }
     
     // --------------------------------------------------
@@ -417,19 +451,14 @@ struct LevelScreen: View {
                         .padding(.horizontal, 16)
 
                     HStack(alignment: .top) {
-                        if isBatmanTheme {
-                            avatarCardView
-                            Spacer()
-                            bossCardView
-                        } else {
-                            heroCardView
-                            Spacer()
-                            bossCardView
-                        }
+                        heroCharacterStack
+                        Spacer()
+                        bossCardView
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
                 }
+
                 .frame(height: gameAreaHeight)
 
                 // BOTTOM CONTROLS
@@ -683,6 +712,25 @@ struct LevelScreen: View {
         .frame(width: 160)
     }
 
+    private var heroCharacterStack: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Group {
+                if isBatmanTheme {
+                    avatarCardView
+                } else {
+                    heroCardView
+                }
+            }
+
+            if shouldShowHeroBubble, let message = viewModel.heroMessage {
+                HeroSpeechBubble(message: message, isPositive: viewModel.heroMessageIsPositive)
+                    .offset(y: -24)
+                    .transition(.scale.combined(with: .opacity))
+            }
+        }
+        .animation(.spring(response: 0.45, dampingFraction: 0.78), value: viewModel.heroMessage)
+    }
+
     @ViewBuilder
     private func avatarImageContent() -> some View {
         if let url = avatarImageURL {
@@ -713,7 +761,7 @@ struct LevelScreen: View {
 
     private var bossCardView: some View {
         VStack(spacing: 6) {
-            if let bossURL = level.bossUrl, let url = URL(string: bossURL) {
+            if let url = URL.backendAsset(from: level.bossUrl) {
                 AsyncImage(url: url) { img in
                     img.resizable()
                         .scaledToFill()
@@ -785,7 +833,9 @@ struct LevelScreen: View {
             notes: currentSublevel?.notes ?? sublevel.notes,
             durations: currentSublevel?.noteDurations ?? sublevel.noteDurations,
             currentIndex: viewModel.currentIndex,
-            isActive: currentSublevel != nil && !showPreview
+            isActive: currentSublevel != nil && !showPreview,
+            forceMediumSpeed: shouldForceMediumSpeed,
+            tempoMultiplier: shouldForceMediumSpeed ? 1.35 : 1.0
         )
         .id(viewModel.resetStamp)
     }
@@ -1124,6 +1174,71 @@ struct LevelScreen: View {
     }
 }
 
+// --------------------------------------------------
+// HERO SPEECH BUBBLE (Batman & Spider levels)
+// --------------------------------------------------
+private struct HeroSpeechBubble: View {
+    let message: String
+    let isPositive: Bool
+
+    private var colors: (background: Color, border: Color, text: Color) {
+        if isPositive {
+            return (
+                Color(red: 0.18, green: 0.45, blue: 0.95).opacity(0.25),
+                Color(red: 0.45, green: 0.78, blue: 1.0).opacity(0.8),
+                Color.white
+            )
+        }
+        return (
+            Color(red: 0.65, green: 0.09, blue: 0.13).opacity(0.25),
+            Color(red: 1.0, green: 0.43, blue: 0.43).opacity(0.8),
+            Color.white
+        )
+    }
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 0) {
+            BubblePointer()
+                .fill(colors.background)
+                .frame(width: 16, height: 18)
+                .overlay(
+                    BubblePointer()
+                        .stroke(colors.border, lineWidth: 1)
+                        .frame(width: 16, height: 18)
+                )
+                .padding(.trailing, -4)
+
+            Text(message)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(colors.text)
+                .lineLimit(3)
+                .multilineTextAlignment(.leading)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(colors.background)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(colors.border, lineWidth: 1)
+                        )
+                        .shadow(color: Color.black.opacity(0.2), radius: 6, x: 0, y: 4)
+                )
+        }
+    }
+}
+
+private struct BubblePointer: Shape {
+    func path(in rect: CGRect) -> Path {
+        Path { path in
+            path.move(to: CGPoint(x: rect.maxX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.minX, y: rect.midY))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+            path.closeSubpath()
+        }
+    }
+}
+
 // MARK: - Falling Notes Support
 private struct FallingNoteSprite: Identifiable, Equatable {
     let id: Int
@@ -1138,6 +1253,8 @@ private struct FallingNotesBoard: View {
     let durations: [String]?
     let currentIndex: Int
     let isActive: Bool
+    let forceMediumSpeed: Bool
+    let tempoMultiplier: CGFloat
 
     @State private var sprites: [FallingNoteSprite] = []
     @State private var nextSpawnIndex: Int = 0
@@ -1151,6 +1268,9 @@ private struct FallingNotesBoard: View {
     private let previewWindow = 5
     private let maxVisibleOffset: CGFloat = 1.2
     private let timer = Timer.publish(every: 1.0 / 60.0, tolerance: 0.003, on: .main, in: .common).autoconnect()
+
+    private var effectiveBaseSpeed: CGFloat { baseSpeed * tempoMultiplier }
+    private var effectiveSpacing: CGFloat { spawnSpacingBase / max(0.6, tempoMultiplier) }
 
     var body: some View {
         let durationSignature = (try? JSONEncoder().encode(durations ?? [])) ?? Data()
@@ -1208,7 +1328,7 @@ private struct FallingNotesBoard: View {
             return
         }
 
-        sprites = sprites.filter { $0.id >= max(0, index - 1) }
+        sprites = sprites.filter { $0.id >= index }
         if nextSpawnIndex < index {
             nextSpawnIndex = index
         }
@@ -1220,8 +1340,8 @@ private struct FallingNotesBoard: View {
 
         var updated = sprites.filter { $0.offsetY <= maxVisibleOffset }
         for idx in updated.indices {
-            guard updated[idx].id >= max(0, currentIndex - 1) else { continue }
-            let speed = baseSpeed / max(updated[idx].lengthFactor, 0.5)
+            guard updated[idx].id >= currentIndex else { continue }
+            let speed = effectiveBaseSpeed / max(updated[idx].lengthFactor, 0.5)
             var nextOffset = updated[idx].offsetY + speed
             if updated[idx].id == currentIndex && nextOffset >= freezeThreshold {
                 nextOffset = min(nextOffset, freezeThreshold)
@@ -1266,7 +1386,7 @@ private struct FallingNotesBoard: View {
 
         for idx in notes.indices {
             offsets.append(-0.35 - cumulative)
-            cumulative += spawnSpacingBase * spacingMultiplier(for: idx)
+            cumulative += effectiveSpacing * spacingMultiplier(for: idx)
         }
 
         if notes.indices.contains(index) {
@@ -1286,6 +1406,9 @@ private struct FallingNotesBoard: View {
     }
 
     private func clampedLengthFactor(for index: Int) -> CGFloat {
+        if forceMediumSpeed {
+            return 1.0
+        }
         let raw = lengthFactor(for: index)
         return max(0.7, min(raw, 2.4))
     }
@@ -1295,7 +1418,7 @@ private struct FallingNotesBoard: View {
             return spawnOffsets[index]
         }
 
-        let spacing = spawnSpacingBase * lengthFactor
+        let spacing = effectiveSpacing * lengthFactor
         let highestOffset = currentSprites.map(\.offsetY).min() ?? -0.35
         return min(highestOffset - spacing, -0.35)
     }
@@ -1401,6 +1524,9 @@ private struct FallingNotesBoard: View {
     }
 
     private func lengthFactor(for index: Int) -> CGFloat {
+        if forceMediumSpeed {
+            return 1.0
+        }
         if let durations,
            durations.indices.contains(index) {
             let token = durations[index].lowercased()
@@ -1877,28 +2003,42 @@ private struct GIFPlayerView: UIViewRepresentable {
 }
 
 private enum GifLoader {
-    static var batmanBackgroundData: Data? {
-        if let asset = NSDataAsset(name: "BatmanLevelBackground") {
+    static func data(named assetName: String, gifResource: String? = nil) -> Data? {
+        if let asset = NSDataAsset(name: assetName) {
             return asset.data
         }
 
-        if let url = Bundle.main.url(forResource: "batman-level-bg", withExtension: "gif") {
+        let resource = gifResource ?? assetName
+
+        if let url = Bundle.main.url(forResource: resource, withExtension: "gif") {
             return try? Data(contentsOf: url)
         }
 
         return nil
     }
 
+    static var batmanBackgroundData: Data? {
+        data(named: "BatmanLevelBackground", gifResource: "batman-level-bg")
+    }
+
     static var spidermanBackgroundData: Data? {
-        if let asset = NSDataAsset(name: "SpidermanLevelBackground") {
-            return asset.data
-        }
+        data(named: "SpidermanLevelBackground", gifResource: "spiderman-level-bg")
+    }
 
-        if let url = Bundle.main.url(forResource: "spiderman-level-bg", withExtension: "gif") {
-            return try? Data(contentsOf: url)
-        }
+    static var totoroBackgroundData: Data? {
+        data(named: "totorobg")
+    }
 
-        return nil
+    static var pokemonBackgroundData: Data? {
+        data(named: "pokemon")
+    }
+
+    static var ironmanBackgroundData: Data? {
+        data(named: "ironmanbg")
+    }
+
+    static var hunterBackgroundData: Data? {
+        data(named: "hunterbg")
     }
 }
 

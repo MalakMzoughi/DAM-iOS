@@ -16,7 +16,6 @@ struct AuthRootView: View {
     @StateObject private var authViewModel = AuthViewModel.make()
 
     @State private var showSettings = false
-    @State private var showLogin = false
     @State private var floatUp = false
 
     var body: some View {
@@ -50,30 +49,10 @@ struct AuthRootView: View {
                         .shadow(radius: 12, y: 8)
                 }
 
-                // FOREGROUND CONTENT (only right column, centered nicely)
-                HStack {
-                    
-                    // Reserve space on the left for the island
-                    Spacer().frame(width: geo.size.width * 0.60)
-
-                    // RIGHT: TITLE + MASCOT + BUTTONS
+                // FOREGROUND CONTENT (hero + inline dialog)
+                HStack(alignment: .top, spacing: 32) {
+                    // LEFT: Mascot + title stack
                     VStack(alignment: .leading, spacing: 16) {
-                        // Settings button
-                        HStack {
-                            Spacer()
-                            Button { showSettings.toggle() } label: {
-                                Image(systemName: "gearshape.fill")
-                                    .font(.system(size: 22, weight: .bold))
-                                    .padding(12)
-                                    .background(AppColors.cardBackground.opacity(0.2), in: Circle())
-                                    .overlay(
-                                        Circle()
-                                            .strokeBorder(Color.white.opacity(0.25), lineWidth: 1)
-                                    )
-                            }
-                        }
-
-                        // Mascot + title
                         HStack(alignment: .center, spacing: 16) {
                             AppImages.mascot
                                 .resizable()
@@ -99,53 +78,44 @@ struct AuthRootView: View {
                             }
                         }
 
-                        Spacer().frame(height: 8)
+                        Spacer()
+                    }
+                    .frame(maxWidth: geo.size.width * 0.45, alignment: .leading)
 
-                        // BUTTONS CENTERED UNDER THE TITLE
+                    Spacer(minLength: 24)
+
+                    // RIGHT: settings + kid onboarding card
+                    VStack(alignment: .leading, spacing: 16) {
                         HStack {
                             Spacer()
-
-                            VStack(spacing: 12) {
-                                Button {
-                                    settings.hasPlayedBefore = true
-                                    router.current = .home
-                                } label: {
-                                    Text(settings.hasPlayedBefore ? "Continue Playing"
-                                                                  : "Start as Guest")
-                                        .frame(maxWidth: 320)
-                                }
-                                .buttonStyle(GradientButtonStyle(gradient: .guestYellow))
-
-                                Button { showLogin.toggle() } label: {
-                                    Text("Login")
-                                        .frame(maxWidth: 320)
-                                }
-                                .buttonStyle(GradientButtonStyle(gradient: .loginPurple))
+                            Button { showSettings.toggle() } label: {
+                                Image(systemName: "gearshape.fill")
+                                    .font(.system(size: 22, weight: .bold))
+                                    .padding(12)
+                                    .background(AppColors.cardBackground.opacity(0.2), in: Circle())
+                                    .overlay(
+                                        Circle()
+                                            .strokeBorder(Color.white.opacity(0.25), lineWidth: 1)
+                                    )
                             }
-
-                            Spacer()
                         }
 
                         Spacer()
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.trailing, 28)
 
-                    Spacer().frame(width: geo.size.width * 0.05)
+                        KidOnboardingPanel(viewModel: authViewModel)
+                            .frame(maxWidth: 480)
+
+                        Spacer(minLength: geo.size.height * 0.08)
+                    }
+                    .frame(maxWidth: geo.size.width * 0.35, alignment: .trailing)
                 }
+                .padding(.horizontal, max(32, geo.size.width * 0.08))
 
                 // Settings sheet
                 CenterDialog(isPresented: $showSettings) {
                     SettingsSheet().environmentObject(settings)
                 }
 
-                // Login sheet
-                CenterDialog(isPresented: $showLogin) {
-                    LoginSheet()
-                        .environmentObject(session)
-                        .environmentObject(router)
-                        .environmentObject(authViewModel)
-                }
             }
             // When auth succeeds, update session, close sheet, go to home
             .onChange(of: authViewModel.isAuthenticated) { isAuth in
@@ -153,7 +123,7 @@ struct AuthRootView: View {
                    let token = authViewModel.lastAuthToken,
                    let profile = authViewModel.userProfile {
                     session.setLoggedIn(authToken: token, profile: profile)
-                    showLogin = false
+                    settings.hasPlayedBefore = true
                     router.current = .home
                 }
             }

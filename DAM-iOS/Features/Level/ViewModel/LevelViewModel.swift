@@ -30,6 +30,8 @@ class LevelViewModel: ObservableObject {
     @Published var resetStamp = UUID()
     
     @Published var wrongMessage: String? = nil
+    @Published var heroMessage: String? = nil
+    @Published var heroMessageIsPositive: Bool = true
     @Published var isLevelCompleted: Bool = false
     @Published var isFailed: Bool = false
     
@@ -38,6 +40,22 @@ class LevelViewModel: ObservableObject {
     
     // Keyboard keys (7 colored notes)
     @Published var keys: [PianoKey] = []
+
+    private var heroMessageToken = UUID()
+    private let encouragementMessages = [
+        "Great rhythm!",
+        "Keep it flowing!",
+        "Music magic unlocked!",
+        "That note sparkled!",
+        "You're nailing it!"
+    ]
+    private let retryMessages = [
+        "Oops! Try again, hero!",
+        "Almost there—hit it again!",
+        "Take a breath and retry!",
+        "Missed it, but you got this!",
+        "Let's fix that note!"
+    ]
     
     // ------------------------------------------------------
     // INIT
@@ -105,6 +123,7 @@ class LevelViewModel: ObservableObject {
         wrongMessage = nil
         score += 10
         currentIndex += 1
+        showHeroMessage(encouragementMessages.randomElement() ?? "Great job!", isPositive: true)
         
         updateProgress()
         
@@ -124,6 +143,7 @@ class LevelViewModel: ObservableObject {
         mistakes += 1
         lives = max(0, 3 - mistakes)
         wrongMessage = "Incorrect! Try again 🎵"
+        showHeroMessage(retryMessages.randomElement() ?? "Try again, hero!", isPositive: false)
         
         if mistakes >= 3 {
             isFailed = true
@@ -160,11 +180,28 @@ class LevelViewModel: ObservableObject {
         lives = 3
         mistakes = 0
         wrongMessage = nil
+        heroMessage = nil
         isLevelCompleted = false
         isFailed = false
         expectedNotes = currentSublevel.notes
         updateProgress()
         resetStamp = UUID()
+    }
+
+    private func showHeroMessage(_ text: String, isPositive: Bool) {
+        heroMessage = text
+        heroMessageIsPositive = isPositive
+        let token = UUID()
+        heroMessageToken = token
+
+        Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 2_200_000_000)
+            await MainActor.run {
+                if self?.heroMessageToken == token {
+                    self?.heroMessage = nil
+                }
+            }
+        }
     }
     
     // ------------------------------------------------------

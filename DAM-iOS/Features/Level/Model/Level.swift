@@ -16,6 +16,7 @@ struct Level: Identifiable, Codable {
     let expectedNotes: [String]
     let difficulty: Int
     let backgroundUrl: String?
+    let backgroundAssetKey: String?
     let bossUrl: String?
     let musicUrl: String?
     let previewAudioUrl: String?
@@ -37,6 +38,7 @@ struct Level: Identifiable, Codable {
         case expectedNotes
         case difficulty
         case backgroundUrl
+        case backgroundAssetKey
         case bossUrl
         case musicUrl
         case previewAudioUrl

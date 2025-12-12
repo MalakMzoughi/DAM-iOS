@@ -138,27 +138,17 @@ class HomeScreenViewModel: ObservableObject {
         userSession: UserSession,
         shouldPersist: Bool
     ) {
-        let filledProgress = completeProgressMap(progress, sourceLevels: sourceLevels)
+        // 1. Keep backend data exactly as-is
+        let filled = completeProgressMap(progress, sourceLevels: sourceLevels)
+        self.progressById = filled
 
-        self.progressById = filledProgress
+        // 2. Total stars = sum of backend stars
+        let totalStars = filled.values.reduce(0) { $0 + $1.starsUnlocked }
 
-        let totalStars = filledProgress.values.reduce(0) { $0 + $1.starsUnlocked }
-        let unlockedIds = filledProgress.values
-            .filter { $0.unlocked }
-            .map { $0.levelId }
-        let highestUnlockedOrder = sourceLevels
-            .filter { unlockedIds.contains($0.id) }
-            .map { $0.order }
-            .max() ?? 1
-
-        if shouldPersist {
-            AppPreferences.shared.setCodable(filledProgress, for: .cachedProgressByLevel)
-            AppPreferences.shared.set(totalStars, for: .cachedStarCount)
-        }
-
+        // 3. Tell the session ONLY the star count (level order no longer matters)
         userSession.updateStarsAndLevel(
             stars: totalStars,
-            level: highestUnlockedOrder
+            level: nil
         )
     }
 
@@ -166,26 +156,32 @@ class HomeScreenViewModel: ObservableObject {
     // MAP COORDINATES FOR PATH
     // ----------------------------------------------------
     func levelPoints(in size: CGSize) -> [CGPoint] {
-        levels.map { lvl in
-            CGPoint(
-                x: CGFloat(lvl.mapPosition.x) * size.width,
-                y: CGFloat(lvl.mapPosition.y) * size.height
-            )
-        }
+    // Front-end only — mirror Android layout
+    return levels.map { lvl in
+        let pos = IOSMapPositions.positions[lvl.order] ?? CGPoint(x: 0.5, y: 0.5)
+        return CGPoint(
+            x: pos.x * size.width,
+            y: pos.y * size.height
+        )
     }
+}
+
+    
 }
 
 // MARK: - Progress Helpers
 private extension HomeScreenViewModel {
-    func completeProgressMap(
-        _ progress: [String: UnlockedLevelItem],
-        sourceLevels: [Level]
-    ) -> [String: UnlockedLevelItem] {
-        guard !sourceLevels.isEmpty else { return progress }
+    private func completeProgressMap(
+    _ progress: [String: UnlockedLevelItem],
+    sourceLevels: [Level]
+) -> [String: UnlockedLevelItem] {
 
-        var updated = progress
-        for level in sourceLevels where updated[level.id] == nil {
-            updated[level.id] = UnlockedLevelItem(
+    var map = progress  // backend always wins
+
+    // Create entries for levels backend didn’t include (rare but safe)
+    for level in sourceLevels {
+        if map[level.id] == nil {
+            map[level.id] = UnlockedLevelItem(
                 levelId: level.id,
                 title: level.title,
                 theme: level.theme,
@@ -196,7 +192,9 @@ private extension HomeScreenViewModel {
                 musicUrl: level.musicUrl
             )
         }
-        return updated
     }
+
+    return map
+}
 
 }

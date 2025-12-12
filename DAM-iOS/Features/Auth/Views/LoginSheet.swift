@@ -11,6 +11,7 @@ struct LoginSheet: View {
     @EnvironmentObject var session: UserSession   // still available if you need it later
     @EnvironmentObject var router: AppRouter      // same here
     @EnvironmentObject var authViewModel: AuthViewModel
+    let onAddPlayer: () -> Void
 
     var body: some View {
         VStack(spacing: 16) {
@@ -63,6 +64,12 @@ struct LoginSheet: View {
                     .multilineTextAlignment(.center)
                     .padding(.top, 4)
             }
+
+            Button(action: onAddPlayer) {
+                Text("Add Another Player")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(SecondaryButtonStyle())
         }
         .padding(24)
         .frame(maxWidth: 420)

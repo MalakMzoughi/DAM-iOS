@@ -60,6 +60,11 @@ private struct RootRouterView: View {
                     .environmentObject(router)
             }
         }
+        .onChange(of: session.isLoggedIn) { isLoggedIn in
+            if !isLoggedIn {
+                router.current = .landing
+            }
+        }
     }
 }
 

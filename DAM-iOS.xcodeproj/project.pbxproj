@@ -23,6 +23,9 @@
 		2F5B7DB12EC66D5C00647B8D /* AuthUIState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F5B7DB02EC66D5C00647B8D /* AuthUIState.swift */; };
 		2F5B7DB32EC66D6800647B8D /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F5B7DB22EC66D6800647B8D /* AuthViewModel.swift */; };
 		2F5B7DB52EC66D7A00647B8D /* AuthRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F5B7DB42EC66D7A00647B8D /* AuthRootView.swift */; };
+		E1C1A0012FF1234A00ABCDEF /* KidProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C1A0112FF1234A00ABCDEF /* KidProfile.swift */; };
+		E1C1A0022FF1234A00ABCDEF /* KidProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C1A0122FF1234A00ABCDEF /* KidProfileStore.swift */; };
+		E1C1A0032FF1234A00ABCDEF /* KidProfileDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C1A0132FF1234A00ABCDEF /* KidProfileDialog.swift */; };
 		2F5B7DBC2EC66E6500647B8D /* HomeUIState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F5B7DBB2EC66E6500647B8D /* HomeUIState.swift */; };
 		2F5B7DC62EC676E500647B8D /* GoogleAuthProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F5B7DC52EC676E500647B8D /* GoogleAuthProvider.swift */; };
 		2F5B7DC82EC679E000647B8D /* LoginSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F5B7DC72EC679E000647B8D /* LoginSheet.swift */; };
@@ -86,6 +89,7 @@
 		F3A061BD2F2A7B7600C2288E /* AppPreferences+Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A061BC2F2A7B7600C2288E /* AppPreferences+Keys.swift */; };
 		F3C0D1E22FE3A4B500112233 /* Models/PianoMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C0D1E12FE3A4B500112233 /* Models/PianoMode.swift */; };
 		F3C0D1F22FE3B5C400112233 /* BackendConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C0D1F12FE3B5C400112233 /* BackendConfig.swift */; };
+		F3C0D1F32FE3B5C400112233 /* URL+Backend.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C0D1F42FE3B5C400112233 /* URL+Backend.swift */; };
 		FA2E7B392EE6660C001CE87C /* note_fa.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B322EE6660C001CE87C /* note_fa.mp3 */; };
 		FA2E7B3A2EE6660C001CE87C /* g_sharp.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B292EE6660C001CE87C /* g_sharp.mp3 */; };
 		FA2E7B3B2EE6660C001CE87C /* c_sharp.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FA2E7B242EE6660C001CE87C /* c_sharp.mp3 */; };
@@ -155,6 +159,9 @@
 		2F5B7DA72EC66CD400647B8D /* AppColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppColors.swift; sourceTree = "<group>"; };
 		2F5B7DAB2EC66CF300647B8D /* AppImages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppImages.swift; sourceTree = "<group>"; };
 		2F5B7DB02EC66D5C00647B8D /* AuthUIState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthUIState.swift; sourceTree = "<group>"; };
+		E1C1A0112FF1234A00ABCDEF /* KidProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidProfile.swift; sourceTree = "<group>"; };
+		E1C1A0122FF1234A00ABCDEF /* KidProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidProfileStore.swift; sourceTree = "<group>"; };
+		E1C1A0132FF1234A00ABCDEF /* KidProfileDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidProfileDialog.swift; sourceTree = "<group>"; };
 		2F5B7DB22EC66D6800647B8D /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		2F5B7DB42EC66D7A00647B8D /* AuthRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthRootView.swift; sourceTree = "<group>"; };
 		2F5B7DBB2EC66E6500647B8D /* HomeUIState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeUIState.swift; sourceTree = "<group>"; };
@@ -213,6 +220,7 @@
 		F3A4B5C6D7E8901234567890 /* re.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = re.mp3; sourceTree = "<group>"; };
 		F3C0D1E12FE3A4B500112233 /* Models/PianoMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/PianoMode.swift; sourceTree = "<group>"; };
 		F3C0D1F12FE3B5C400112233 /* BackendConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendConfig.swift; sourceTree = "<group>"; };
+		F3C0D1F42FE3B5C400112233 /* URL+Backend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+Backend.swift"; sourceTree = "<group>"; };
 		F6A7B8C9D0E1234567890123 /* sol.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = sol.mp3; sourceTree = "<group>"; };
 		FA2E7B222EE6660C001CE87C /* a_sharp.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = a_sharp.mp3; sourceTree = "<group>"; };
 		FA2E7B232EE6660C001CE87C /* bg_music.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = bg_music.mp3; sourceTree = "<group>"; };
@@ -336,6 +344,7 @@
 			isa = PBXGroup;
 			children = (
 				F3C0D1F32FE3B5E600112233 /* Config */,
+				F3C0D1F52FE3B6A500112233 /* Extensions */,
 				2F5B7D712EC6690D00647B8D /* Services */,
 				2F5B7D722EC6691800647B8D /* Network */,
 				2F5B7D732EC6692000647B8D /* Persistence */,
@@ -369,6 +378,7 @@
 				2F5B7DDC2EC67E2A00647B8D /* UserSession.swift */,
 				2F5B7DDE2EC67E5300647B8D /* AppStorageKeys.swift */,
 				2F5B7DE02EC67E7E00647B8D /* AppSettings.swift */,
+				E1C1A0122FF1234A00ABCDEF /* KidProfileStore.swift */,
 				F3A061B52EC77DC80033F817 /* UserDefaultsService.swift */,
 				F3A061B92F2A7B0B00C2288E /* AppPreferences.swift */,
 				F3A061BC2F2A7B7600C2288E /* AppPreferences+Keys.swift */,
@@ -524,6 +534,7 @@
 			children = (
 				2F5B7DB42EC66D7A00647B8D /* AuthRootView.swift */,
 				2F5B7DC72EC679E000647B8D /* LoginSheet.swift */,
+				E1C1A0132FF1234A00ABCDEF /* KidProfileDialog.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -741,6 +752,7 @@
 			children = (
 				FAF108C52EDB938900F96246 /* MusicRecognitionModels.swift */,
 				FAF108CC2EDB969000F96246 /* AvatarModels.swift */,
+				E1C1A0112FF1234A00ABCDEF /* KidProfile.swift */,
 				F3C0D1E12FE3A4B500112233 /* Models/PianoMode.swift */,
 			);
 			name = Models;
@@ -774,6 +786,14 @@
 				F3C0D1F12FE3B5C400112233 /* BackendConfig.swift */,
 			);
 			path = Config;
+			sourceTree = "<group>";
+		};
+		F3C0D1F52FE3B6A500112233 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				F3C0D1F42FE3B5C400112233 /* URL+Backend.swift */,
+			);
+			path = Extensions;
 			sourceTree = "<group>";
 		};
 		FAB844F82EE4AA7400C7B9B4 /* FallingNotes */ = {
@@ -904,6 +924,7 @@
 				2F5B7DDF2EC67E5300647B8D /* AppStorageKeys.swift in Sources */,
 				2F5B7DDD2EC67E2A00647B8D /* UserSession.swift in Sources */,
 				2F5B7DC82EC679E000647B8D /* LoginSheet.swift in Sources */,
+				E1C1A0032FF1234A00ABCDEF /* KidProfileDialog.swift in Sources */,
 				FAF978212EE4C82800E48C78 /* NoteLanesView.swift in Sources */,
 				B0C31DFB2ED3517C0054A4AC /* LevelRepository.swift in Sources */,
 				FAC590F82EDA70DA0090D5E4 /* MusicService.swift in Sources */,
@@ -917,8 +938,10 @@
 				B0C31DF72ED351190054A4AC /* LevelProgressRequest.swift in Sources */,
 				2F5B7DD72EC67BD500647B8D /* WaveBackground.swift in Sources */,
 				2F5B7D802EC66A1900647B8D /* User.swift in Sources */,
+				E1C1A0012FF1234A00ABCDEF /* KidProfile.swift in Sources */,
 				2F5B7DDB2EC67D8900647B8D /* ColorHex.swift in Sources */,
 				2F5B7DE12EC67E7E00647B8D /* AppSettings.swift in Sources */,
+				E1C1A0022FF1234A00ABCDEF /* KidProfileStore.swift in Sources */,
 				2F5B7DEA2EC6BAFF00647B8D /* UIHelpers.swift in Sources */,
 				2F5B7DBC2EC66E6500647B8D /* HomeUIState.swift in Sources */,
 				2F77EC7E2EC77DC80033F817 /* SeaFoamOverlayView.swift in Sources */,
@@ -972,6 +995,7 @@
 				ABFBC363B7DC4BEC89E79662 /* AvatarSelectionView.swift in Sources */,
 				FAF108C92EDB93BC00F96246 /* AvatarService.swift in Sources */,
 				F3C0D1F22FE3B5C400112233 /* BackendConfig.swift in Sources */,
+				F3C0D1F32FE3B5C400112233 /* URL+Backend.swift in Sources */,
 				BC93A6F4074D4B5AA07F3124 /* LevelSelectionViewModel.swift in Sources */,
 				337C2D0C8DA44594AF7C9B14 /* AvatarSelectionViewModel.swift in Sources */,
 				FAB844FC2EE4AA7500C7B9B4 /* FallingNotesGame.swift in Sources */,

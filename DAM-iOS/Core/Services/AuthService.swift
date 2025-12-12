@@ -14,6 +14,11 @@ struct SocialLoginBody: Codable {
     let provider: String   // "google" or "facebook"
 }
 
+struct DevLoginBody: Codable {
+    let email: String
+    let name: String
+}
+
 struct AuthResponseDto: Codable {
     let providerId: String
     let authToken: String
@@ -96,6 +101,27 @@ final class AuthService {
         print("✅ Auth success for user:", profile.name, "| providerId:", dto.providerId)
 
         return (dto.authToken, profile)
+    }
+
+    func signInWithDevAccount(email: String, name: String) async throws -> (authToken: String, profile: UserProfile) {
+        var request = URLRequest(url: API.base.appendingPathComponent("auth/dev-login"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 30
+
+        let body = DevLoginBody(email: email, name: name)
+        request.httpBody = try JSONEncoder().encode(body)
+
+        print("🧪 Dev login for", email)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse,
+              (200..<300).contains(http.statusCode) else {
+            throw URLError(.badServerResponse)
+        }
+
+        let dto = try JSONDecoder().decode(AuthResponseDto.self, from: data)
+        return (dto.authToken, dto.user.asUserProfile)
     }
 
     func signOut() {

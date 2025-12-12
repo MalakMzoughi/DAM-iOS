@@ -17,32 +17,54 @@ struct LevelIntroDialogView: View {
     @State private var allTextShown = false
     @State private var isVisible = false
 
-    // MARK: - Hero image name mapping (case-sensitive)
-    private var heroImageName: String {
+    private var heroAssetName: String? {
         switch level.theme {
-        case "Batman":
-            return "heroBatman"
-        case "Spider-Man":
-            return "heroSpiderman"
-        case "My Neighbour Totoro":
-            return "heroTotoro"
-        case "Pokémon", "Pokemon":
-            return "heroPokemon"
-        case "Marvel-Heroes":
-            return "heroAvengers"
-        case "HunterxHunter":
-            return "heroHXH"
-        default:
-            return "heroDefault"
+        case "Batman": return "heroBatman"
+        case "Spider-Man": return "heroSpiderman"
+        case "My Neighbour Totoro": return "heroTotoro"
+        case "Pokémon", "Pokemon": return "heroPokemon"
+        case "Marvel-Heroes": return "heroAvengers"
+        case "HunterxHunter": return "heroHXH"
+        default: return nil
         }
     }
 
-    // MARK: - Hero Image using UIImage(named:)
-    private var heroImage: Image {
-        if let uiImage = UIImage(named: heroImageName) {
-            return Image(uiImage: uiImage)
+    private var heroRemoteURL: URL? {
+        if let boss = URL.backendAsset(from: level.bossUrl) {
+            return boss
+        }
+        if let background = URL.backendAsset(from: level.backgroundUrl) {
+            return background
+        }
+        return URL.backendAsset(from: level.islandImageUrl)
+    }
+
+    @ViewBuilder
+    private var heroImageView: some View {
+        if let assetName = heroAssetName, UIImage(named: assetName) != nil {
+            Image(assetName)
+                .resizable()
+                .scaledToFit()
+        } else if let url = heroRemoteURL {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().scaledToFit()
+                case .failure:
+                    Image(systemName: "sparkles")
+                        .resizable()
+                        .scaledToFit()
+                        .foregroundColor(.white.opacity(0.4))
+                case .empty:
+                    ProgressView().tint(.white)
+                @unknown default:
+                    Color.clear
+                }
+            }
         } else {
-            return Image(heroImageName) // fallback (in case SwiftUI asset works)
+            Image("heroBatman")
+                .resizable()
+                .scaledToFit()
         }
     }
 
@@ -70,9 +92,7 @@ struct LevelIntroDialogView: View {
                 // HERO + STORY
                 HStack(spacing: 20) {
                     // HERO IMAGE
-                    heroImage
-                        .resizable()
-                        .scaledToFit()
+                    heroImageView
                         .frame(width: 170, height: 250)
                         .shadow(color: .blue.opacity(0.5), radius: 12, x: 0, y: 6)
 

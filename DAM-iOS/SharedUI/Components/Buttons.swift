@@ -51,4 +51,8 @@ extension LinearGradient {
         LinearGradient(colors: [AppColors.rainbowIndigo, AppColors.rainbowViolet],
                        startPoint: .leading, endPoint: .trailing)
     }
+        static var playerTeal: LinearGradient {
+                LinearGradient(colors: [AppColors.rainbowGreen, AppColors.rainbowBlue],
+                                                startPoint: .leading, endPoint: .trailing)
+        }
 }
