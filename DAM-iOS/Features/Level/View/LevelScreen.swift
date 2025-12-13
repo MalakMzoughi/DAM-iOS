@@ -1262,8 +1262,9 @@ private struct FallingNotesBoard: View {
     @State private var spawnOffsets: [CGFloat] = []
 
     private let laneCount = 7
-    private let baseSpeed: CGFloat = 0.0038
-    private let spawnSpacingBase: CGFloat = 0.18
+    // Faster global fall speed (was 0.0038, then 0.0062)
+    private let baseSpeed: CGFloat = 0.0095
+    private let spawnSpacingBase: CGFloat = 0.12
     private let freezeThreshold: CGFloat = 0.92
     private let previewWindow = 5
     private let maxVisibleOffset: CGFloat = 1.2
@@ -1341,9 +1342,11 @@ private struct FallingNotesBoard: View {
         var updated = sprites.filter { $0.offsetY <= maxVisibleOffset }
         for idx in updated.indices {
             guard updated[idx].id >= currentIndex else { continue }
-            let speed = effectiveBaseSpeed / max(updated[idx].lengthFactor, 0.5)
+            // Speed should be independent of note length; length only affects visual size/spacing.
+            let speed = effectiveBaseSpeed
             var nextOffset = updated[idx].offsetY + speed
-            if updated[idx].id == currentIndex && nextOffset >= freezeThreshold {
+            // Freeze all notes at the hit zone, waiting for the current note to be hit
+            if nextOffset >= freezeThreshold {
                 nextOffset = min(nextOffset, freezeThreshold)
             }
             updated[idx].offsetY = nextOffset
@@ -1402,7 +1405,7 @@ private struct FallingNotesBoard: View {
     }
 
     private func spacingMultiplier(for index: Int) -> CGFloat {
-        return clampedLengthFactor(for: index)
+        return 1.0
     }
 
     private func clampedLengthFactor(for index: Int) -> CGFloat {
@@ -1418,7 +1421,7 @@ private struct FallingNotesBoard: View {
             return spawnOffsets[index]
         }
 
-        let spacing = effectiveSpacing * lengthFactor
+        let spacing = effectiveSpacing
         let highestOffset = currentSprites.map(\.offsetY).min() ?? -0.35
         return min(highestOffset - spacing, -0.35)
     }
